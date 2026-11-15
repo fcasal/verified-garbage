@@ -15263,33 +15263,10 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x16, x16, #8
 	sub x14, x14, #1
 	cbnz x14, 268b
-	lsl x6, x12, #6
-269:
-	movz x7, #0, lsl #0
-	add x14, x12, #0
-	adds x3, x7, x7
-	add x16, x0, #256
-270:
-	ldr x3, [x16, #0]
-	adcs x3, x3, x3
-	str x3, [x16, #0]
-	add x16, x16, #8
-	sub x14, x14, #1
-	cbnz x14, 270b
-	add x16, x11, #0
-	add x16, x16, x0
-	add x16, x16, #256
-	add x14, x12, #1
-271:
-	ldr x3, [x16, #0]
-	adcs x3, x3, x3
-	str x3, [x16, #0]
-	add x16, x16, #8
-	sub x14, x14, #1
-	cbnz x14, 271b
-	movz x7, #0, lsl #0
-	add x14, x12, #0
-	subs x3, x7, x7
+	add x13, x0, #256
+	lsl x3, x12, #3
+	add x13, x13, x3
+	add x6, x12, #0
 	add x16, x11, #0
 	add x16, x16, x0
 	add x16, x16, #256
@@ -15297,52 +15274,79 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x17, x17, x17
 	add x17, x17, x0
 	add x17, x17, #256
-	add x13, x11, #0
-	add x13, x13, x13
-	add x13, x13, x11
-	add x13, x13, x0
-	add x13, x13, #256
-272:
+	add x8, x11, #0
+	add x8, x8, x8
+	add x8, x8, x11
+	add x8, x8, x0
+	add x8, x8, #256
+269:
+	sub x13, x13, #8
+	ldr x14, [x13, #0]
+	movz x15, #0, lsl #0
+	movz x9, #64, lsl #0
+	adds x14, x14, x14
+270:
+	ldr x3, [x16, #0]
+	adcs x3, x3, x3
+	str x3, [x16, #0]
+	ldr x3, [x16, #8]
+	adcs x3, x3, x3
+	str x3, [x16, #8]
+	ldr x3, [x16, #16]
+	adcs x3, x3, x3
+	str x3, [x16, #16]
+	ldr x3, [x16, #24]
+	adcs x3, x3, x3
+	str x3, [x16, #24]
+	ldr x3, [x16, #32]
+	adcs x3, x3, x3
+	str x3, [x16, #32]
+	subs x3, x7, x7
 	ldr x3, [x16, #0]
 	ldr x4, [x17, #0]
 	sbcs x3, x3, x4
-	str x3, [x13, #0]
-	add x16, x16, #8
-	add x17, x17, #8
-	add x13, x13, #8
-	sub x14, x14, #1
-	cbnz x14, 272b
+	str x3, [x8, #0]
+	ldr x3, [x16, #8]
+	ldr x4, [x17, #8]
+	sbcs x3, x3, x4
+	str x3, [x8, #8]
+	ldr x3, [x16, #16]
+	ldr x4, [x17, #16]
+	sbcs x3, x3, x4
+	str x3, [x8, #16]
+	ldr x3, [x16, #24]
+	ldr x4, [x17, #24]
+	sbcs x3, x3, x4
+	str x3, [x8, #24]
+	ldr x3, [x16, #32]
+	ldr x4, [x17, #32]
+	sbcs x3, x3, x4
+	str x3, [x8, #32]
 	ldr x3, [x16, #0]
-	sbcs x3, x3, x7
-	str x3, [x13, #0]
-	sub x4, x7, #1
-	csel x15, x4, x7, hs
-	add x16, x11, #0
-	add x16, x16, x16
-	add x16, x16, x11
-	add x16, x16, x0
-	add x16, x16, #256
-	add x17, x11, #0
-	add x17, x17, x0
-	add x17, x17, #256
-	add x14, x12, #1
-	movz x3, #1, lsl #0
-	subs x3, x15, x3
-273:
-	ldr x3, [x16, #0]
-	ldr x4, [x17, #0]
-	csel x4, x3, x4, hs
-	str x4, [x17, #0]
-	add x16, x16, #8
-	add x17, x17, #8
-	sub x14, x14, #1
-	cbnz x14, 273b
-	add x16, x0, #256
-	ldr x3, [x16, #0]
-	movz x4, #1, lsl #0
-	and x4, x4, x15
-	orr x3, x3, x4
+	ldr x4, [x8, #0]
+	csel x3, x4, x3, hs
 	str x3, [x16, #0]
+	ldr x3, [x16, #8]
+	ldr x4, [x8, #8]
+	csel x3, x4, x3, hs
+	str x3, [x16, #8]
+	ldr x3, [x16, #16]
+	ldr x4, [x8, #16]
+	csel x3, x4, x3, hs
+	str x3, [x16, #16]
+	ldr x3, [x16, #24]
+	ldr x4, [x8, #24]
+	csel x3, x4, x3, hs
+	str x3, [x16, #24]
+	ldr x3, [x16, #32]
+	ldr x4, [x8, #32]
+	csel x3, x4, x3, hs
+	str x3, [x16, #32]
+	adcs x15, x15, x15
+	adds x14, x14, x14
+	sub x9, x9, #1
+	cbnz x9, 270b
+	str x15, [x13, #0]
 	sub x6, x6, #1
 	cbnz x6, 269b
 	ldr x12, [x0, #48]
@@ -15365,7 +15369,7 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x8, x8, x11
 	add x8, x8, x0
 	add x8, x8, #256
-274:
+271:
 	ldr x3, [x16, #0]
 	ldr x4, [x17, #0]
 	and x4, x4, x15
@@ -15375,7 +15379,7 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x17, x17, #8
 	add x8, x8, #8
 	sub x14, x14, #1
-	cbnz x14, 274b
+	cbnz x14, 271b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x16, x11, #0
@@ -15393,13 +15397,13 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x14, x12, #0
 	adds x3, x7, x7
 	add x16, x0, #256
-275:
+272:
 	ldr x3, [x16, #0]
 	adcs x3, x3, x3
 	str x3, [x16, #0]
 	add x16, x16, #8
 	sub x14, x14, #1
-	cbnz x14, 275b
+	cbnz x14, 272b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x11, #0
@@ -15409,6 +15413,30 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x8, x8, x0
 	add x8, x8, #256
 	ldr x1, [x0, #160]
+	ldr x9, [x0, #136]
+	add x1, x1, x9
+	ldr x15, [x0, #176]
+	movz x2, #0, lsl #0
+	movz x6, #7, lsl #0
+273:
+	and x5, x2, x6
+	cbz x5, 274f
+	b 275f
+274:
+	add x5, x8, x2
+	ldr x3, [x5, #0]
+	and x3, x3, x15
+275:
+	sub x1, x1, #1
+	strb w3, [x1, #0]
+	lsr x3, x3, #8
+	add x2, x2, #1
+	sub x9, x9, #1
+	cbnz x9, 273b
+	ldr x12, [x0, #48]
+	ldr x11, [x0, #224]
+	add x8, x0, #256
+	ldr x1, [x0, #168]
 	ldr x9, [x0, #136]
 	add x1, x1, x9
 	ldr x15, [x0, #176]
@@ -15429,34 +15457,10 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x2, x2, #1
 	sub x9, x9, #1
 	cbnz x9, 276b
-	ldr x12, [x0, #48]
-	ldr x11, [x0, #224]
-	add x8, x0, #256
-	ldr x1, [x0, #168]
-	ldr x9, [x0, #136]
-	add x1, x1, x9
-	ldr x15, [x0, #176]
-	movz x2, #0, lsl #0
-	movz x6, #7, lsl #0
-279:
-	and x5, x2, x6
-	cbz x5, 280f
-	b 281f
-280:
-	add x5, x8, x2
-	ldr x3, [x5, #0]
-	and x3, x3, x15
-281:
-	sub x1, x1, #1
-	strb w3, [x1, #0]
-	lsr x3, x3, #8
-	add x2, x2, #1
-	sub x9, x9, #1
-	cbnz x9, 279b
 	ldr x1, [x0, #160]
 	ldrb w3, [x1, #0]
 	lsr x3, x3, #7
-	cbz x3, 282f
+	cbz x3, 279f
 	ldr x0, [sp, #40]
 	movz x1, #5120, lsl #0
 	ldr x2, [sp, #112]
@@ -15467,22 +15471,22 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x4, sp, #152
 	bl {vg_dsa_probable_prime_3072}
 	add w0, w0, #0
-	cbz x0, 284f
+	cbz x0, 281f
 	ldr x3, [sp, #152]
 	ldr x4, [sp, #128]
 	add x3, x3, x4
 	str x3, [sp, #128]
-	b 285f
-284:
-285:
+	b 282f
+281:
+282:
 	lsr x3, x0, #1
 	add x0, x0, x3
 	str x0, [sp, #152]
-	b 283f
-282:
+	b 280f
+279:
 	movz x3, #3, lsl #0
 	str x3, [sp, #152]
-283:
+280:
 	ldr x0, [sp, #40]
 	movz x3, #27840, lsl #0
 	add x0, x0, x3
@@ -15490,9 +15494,9 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	str x3, [x0, #16]
 	ldr x3, [x0, #16]
 	sub x3, x3, #3
-	cbz x3, 286f
-	b 287f
-286:
+	cbz x3, 283f
+	b 284f
+283:
 	ldr x3, [x0, #0]
 	add x3, x3, #1
 	str x3, [x0, #0]
@@ -15504,23 +15508,23 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	movz x7, #0, lsl #0
 	movz x4, #1, lsl #0
 	csel x5, x4, x7, hs
-	cbz x5, 288f
+	cbz x5, 285f
 	movz x3, #2, lsl #0
 	str x3, [x0, #16]
-	b 289f
-288:
+	b 286f
+285:
 	movz x3, #3, lsl #0
 	str x3, [x0, #16]
-289:
-287:
+286:
+284:
 	ldr x3, [x0, #16]
 	sub x3, x3, #3
 	cbz x3, 218b
 	ldr x3, [sp, #152]
 	sub x3, x3, #1
-	cbz x3, 290f
-	b 291f
-290:
+	cbz x3, 287f
+	b 288f
+287:
 	ldr x3, [sp, #112]
 	ldr x4, [sp, #128]
 	ldr x6, [sp, #120]
@@ -15543,12 +15547,12 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	lsl x4, x4, #2
 	sub x3, x0, x4
 	sub x4, x3, #3
-	cbz x4, 292f
+	cbz x4, 289f
 	add x3, x3, x3
 	sub x3, x3, #1
 	str x3, [sp, #152]
-	b 293f
-292:
+	b 290f
+289:
 	ldr x4, [sp, #104]
 	movz x5, #49152, lsl #0
 	subs x4, x4, x5
@@ -15556,18 +15560,18 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	movz x5, #0, lsl #0
 	csel x3, x4, x5, hs
 	str x3, [sp, #152]
-293:
-291:
+290:
+288:
 217:
 	ldr x0, [sp, #152]
 	sub x0, x0, #3
-	cbz x0, 294f
-	b 295f
-294:
+	cbz x0, 291f
+	b 292f
+291:
 	ldr x3, [sp, #464]
 	sub x3, x3, #1
 	str x3, [sp, #464]
-295:
+292:
 	b 28f
 27:
 	movz x3, #0, lsl #0
@@ -15584,9 +15588,9 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x14, [sp, #456]
 	ldr x15, [sp, #448]
 	ldr x3, [sp, #152]
-	cbz x3, 296f
+	cbz x3, 293f
 	sub x3, x3, #1
-	cbz x3, 298f
+	cbz x3, 295f
 	movz x11, #0, lsl #0
 	movz x10, #0, lsl #0
 	ldr x12, [sp, #472]
@@ -15595,8 +15599,8 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	str x12, [x15, #0]
 	movz x9, #3, lsl #0
 	str x9, [sp, #472]
-	b 299f
-298:
+	b 296f
+295:
 	movz x11, #0, lsl #0
 	movz x10, #0, lsl #0
 	ldr x12, [sp, #128]
@@ -15605,9 +15609,9 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	str x12, [x15, #0]
 	movz x9, #1, lsl #0
 	str x9, [sp, #472]
-299:
-	b 297f
 296:
+	b 294f
+293:
 	ldr x10, [sp, #120]
 	ldr x9, [sp, #472]
 	sub x10, x10, x9
@@ -15618,7 +15622,7 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	movz x12, #0, lsl #0
 	movz x13, #1, lsl #0
 	csel x12, x13, x12, hs
-	cbz x12, 2100f
+	cbz x12, 297f
 	movz x11, #0, lsl #0
 	movz x10, #0, lsl #0
 	ldr x12, [sp, #472]
@@ -15627,8 +15631,8 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	str x12, [x15, #0]
 	movz x9, #3, lsl #0
 	str x9, [sp, #472]
-	b 2101f
-2100:
+	b 298f
+297:
 	lsl x12, x9, #8
 	subs x13, x10, x12
 	csel x10, x10, x12, hs
@@ -15642,11 +15646,11 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	str x12, [x15, #0]
 	movz x9, #0, lsl #0
 	str x9, [sp, #472]
-2101:
-297:
+298:
+294:
 	ldr x3, [sp, #152]
 	sub x3, x3, #1
-	cbz x3, 2102f
+	cbz x3, 299f
 	ldr x3, [sp, #48]
 	str x3, [sp, #152]
 	ldr x3, [sp, #56]
@@ -15654,43 +15658,43 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x11, [sp, #152]
 	ldr x12, [sp, #168]
 	movz x13, #0, lsl #0
-2104:
+2101:
 	strb w13, [x11, #0]
 	add x11, x11, #1
 	sub x12, x12, #1
-	cbnz x12, 2104b
+	cbnz x12, 2101b
 	movz x0, #0, lsl #0
-	b 2103f
-2102:
+	b 2100f
+299:
 	ldr x12, [sp, #40]
 	movz x3, #27008, lsl #0
 	add x12, x12, x3
 	ldr x2, [sp, #48]
 	ldr x9, [sp, #56]
-	cbnz x9, 2105f
-	b 2106f
-2105:
-2107:
+	cbnz x9, 2102f
+	b 2103f
+2102:
+2104:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2107b
-2106:
-	movz x0, #1, lsl #0
+	cbnz x9, 2104b
 2103:
+	movz x0, #1, lsl #0
+2100:
 	ldr x0, [sp, #472]
 	b 23f
 22:
 	movz x3, #32, lsl #0
 	str x3, [sp, #144]
 	str x3, [sp, #208]
-2108:
+2105:
 	ldr x0, [sp, #128]
 	ldr x3, [sp, #464]
 	str x0, [sp, #472]
-	cbz x3, 2109f
+	cbz x3, 2106f
 	ldr x3, [sp, #120]
 	sub x3, x3, x0
 	movz x4, #32, lsl #0
@@ -15698,7 +15702,7 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	movz x4, #1, lsl #0
 	movz x5, #0, lsl #0
 	csel x3, x5, x4, hs
-	cbnz x3, 2111f
+	cbnz x3, 2108f
 	ldr x3, [sp, #112]
 	str x3, [sp, #88]
 	add x3, x3, x0
@@ -15718,7 +15722,7 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	str x3, [sp, #208]
 	ldr x0, [sp, #208]
 	sub x0, x0, #20
-	cbz x0, 2113f
+	cbz x0, 2110f
 	ldr x0, [sp, #96]
 	add x0, x0, #3072
 	bl {vg_sha256_init}
@@ -15738,8 +15742,8 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x3, [sp, #96]
 	add x3, x3, #3520
 	bl {vg_sha256_finalize_scratch_sha2}
-	b 2114f
-2113:
+	b 2111f
+2110:
 	ldr x0, [sp, #96]
 	add x0, x0, #3072
 	bl {vg_sha1_init}
@@ -15759,24 +15763,24 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x3, [sp, #96]
 	add x3, x3, #3520
 	bl {vg_sha1_finalize_scratch_sha2}
-2114:
+2111:
 	ldr x2, [sp, #0]
 	ldr x12, [sp, #96]
 	add x12, x12, #3328
 	ldr x9, [sp, #208]
 	add x13, x2, #0
 	add x14, x9, #0
-	cbnz x9, 2115f
-	b 2116f
-2115:
-2117:
+	cbnz x9, 2112f
+	b 2113f
+2112:
+2114:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2117b
-2116:
+	cbnz x9, 2114b
+2113:
 	ldrb w0, [x13, #0]
 	movz x4, #128, lsl #0
 	orr x0, x0, x4
@@ -15797,22 +15801,22 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x4, sp, #152
 	bl {vg_dsa_probable_prime_256}
 	add w0, w0, #0
-	cbz x0, 2118f
+	cbz x0, 2115f
 	ldr x3, [sp, #152]
 	ldr x4, [sp, #128]
 	add x3, x3, x4
 	str x3, [sp, #128]
-	b 2119f
-2118:
-2119:
+	b 2116f
+2115:
+2116:
 	lsr x3, x0, #1
 	add x0, x0, x3
 	str x0, [sp, #152]
 	ldr x3, [sp, #152]
 	sub x3, x3, #1
-	cbz x3, 2120f
-	b 2121f
-2120:
+	cbz x3, 2117f
+	b 2118f
+2117:
 	ldr x0, [sp, #40]
 	movz x3, #27840, lsl #0
 	add x0, x0, x3
@@ -15820,7 +15824,7 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	str x3, [x0, #0]
 	movz x3, #1, lsl #0
 	str x3, [x0, #8]
-2122:
+2119:
 	ldr x3, [x0, #8]
 	ldr x4, [sp, #40]
 	movz x5, #25024, lsl #0
@@ -15985,17 +15989,17 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x2, [sp, #32]
 	add x2, x2, #224
 	movz x9, #32, lsl #0
-	cbnz x9, 2123f
-	b 2124f
-2123:
-2125:
+	cbnz x9, 2120f
+	b 2121f
+2120:
+2122:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2125b
-2124:
+	cbnz x9, 2122b
+2121:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -16152,17 +16156,17 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x2, [sp, #32]
 	add x2, x2, #192
 	movz x9, #32, lsl #0
-	cbnz x9, 2126f
-	b 2127f
-2126:
-2128:
+	cbnz x9, 2123f
+	b 2124f
+2123:
+2125:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2128b
-2127:
+	cbnz x9, 2125b
+2124:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -16319,17 +16323,17 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x2, [sp, #32]
 	add x2, x2, #160
 	movz x9, #32, lsl #0
-	cbnz x9, 2129f
-	b 2130f
-2129:
-2131:
+	cbnz x9, 2126f
+	b 2127f
+2126:
+2128:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2131b
-2130:
+	cbnz x9, 2128b
+2127:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -16486,17 +16490,17 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x2, [sp, #32]
 	add x2, x2, #128
 	movz x9, #32, lsl #0
-	cbnz x9, 2132f
-	b 2133f
-2132:
-2134:
+	cbnz x9, 2129f
+	b 2130f
+2129:
+2131:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2134b
-2133:
+	cbnz x9, 2131b
+2130:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -16653,17 +16657,17 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x2, [sp, #32]
 	add x2, x2, #96
 	movz x9, #32, lsl #0
-	cbnz x9, 2135f
-	b 2136f
-2135:
-2137:
+	cbnz x9, 2132f
+	b 2133f
+2132:
+2134:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2137b
-2136:
+	cbnz x9, 2134b
+2133:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -16820,17 +16824,17 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x2, [sp, #32]
 	add x2, x2, #64
 	movz x9, #32, lsl #0
-	cbnz x9, 2138f
-	b 2139f
-2138:
-2140:
+	cbnz x9, 2135f
+	b 2136f
+2135:
+2137:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2140b
-2139:
+	cbnz x9, 2137b
+2136:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -16987,17 +16991,17 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x2, [sp, #32]
 	add x2, x2, #32
 	movz x9, #32, lsl #0
-	cbnz x9, 2141f
-	b 2142f
-2141:
-2143:
+	cbnz x9, 2138f
+	b 2139f
+2138:
+2140:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2143b
-2142:
+	cbnz x9, 2140b
+2139:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -17154,6 +17158,23 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x2, [sp, #32]
 	add x2, x2, #0
 	movz x9, #32, lsl #0
+	cbnz x9, 2141f
+	b 2142f
+2141:
+2143:
+	ldrb w0, [x12, #0]
+	strb w0, [x2, #0]
+	add x12, x12, #1
+	add x2, x2, #1
+	sub x9, x9, #1
+	cbnz x9, 2143b
+2142:
+	ldr x2, [sp, #0]
+	ldr x12, [sp, #32]
+	add x12, x12, #0
+	movz x9, #256, lsl #0
+	add x13, x2, #0
+	add x14, x9, #0
 	cbnz x9, 2144f
 	b 2145f
 2144:
@@ -17165,23 +17186,6 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	sub x9, x9, #1
 	cbnz x9, 2146b
 2145:
-	ldr x2, [sp, #0]
-	ldr x12, [sp, #32]
-	add x12, x12, #0
-	movz x9, #256, lsl #0
-	add x13, x2, #0
-	add x14, x9, #0
-	cbnz x9, 2147f
-	b 2148f
-2147:
-2149:
-	ldrb w0, [x12, #0]
-	strb w0, [x2, #0]
-	add x12, x12, #1
-	add x2, x2, #1
-	sub x9, x9, #1
-	cbnz x9, 2149b
-2148:
 	ldrb w0, [x13, #0]
 	movz x4, #128, lsl #0
 	orr x0, x0, x4
@@ -17249,11 +17253,11 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	movz x7, #0, lsl #0
 	add x16, x8, #0
 	add x14, x12, #2
-2150:
+2147:
 	str x7, [x16, #0]
 	add x16, x16, #8
 	sub x14, x14, #1
-	cbnz x14, 2150b
+	cbnz x14, 2147b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x0, #256
@@ -17261,21 +17265,21 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x2, [x0, #136]
 	movz x3, #0, lsl #0
 	movz x6, #7, lsl #0
-2151:
+2148:
 	sub x2, x2, #1
 	lsl x3, x3, #8
 	ldrb w4, [x1, #0]
 	add x3, x3, x4
 	add x1, x1, #1
 	and x5, x2, x6
-	cbz x5, 2152f
-	b 2153f
-2152:
+	cbz x5, 2149f
+	b 2150f
+2149:
 	add x5, x8, x2
 	str x3, [x5, #0]
 	movz x3, #0, lsl #0
-2153:
-	cbnz x2, 2151b
+2150:
+	cbnz x2, 2148b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x11, #0
@@ -17285,11 +17289,11 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	movz x7, #0, lsl #0
 	add x16, x8, #0
 	add x14, x12, #2
-2154:
+2151:
 	str x7, [x16, #0]
 	add x16, x16, #8
 	sub x14, x14, #1
-	cbnz x14, 2154b
+	cbnz x14, 2151b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x11, #0
@@ -17300,21 +17304,21 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x2, [x0, #152]
 	movz x3, #0, lsl #0
 	movz x6, #7, lsl #0
-2155:
+2152:
 	sub x2, x2, #1
 	lsl x3, x3, #8
 	ldrb w4, [x1, #0]
 	add x3, x3, x4
 	add x1, x1, #1
 	and x5, x2, x6
-	cbz x5, 2156f
-	b 2157f
-2156:
+	cbz x5, 2153f
+	b 2154f
+2153:
 	add x5, x8, x2
 	str x3, [x5, #0]
 	movz x3, #0, lsl #0
-2157:
-	cbnz x2, 2155b
+2154:
+	cbnz x2, 2152b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	movz x7, #0, lsl #0
@@ -17324,13 +17328,13 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x16, x16, x16
 	add x16, x16, x0
 	add x16, x16, #256
-2158:
+2155:
 	ldr x3, [x16, #0]
 	adcs x3, x3, x3
 	str x3, [x16, #0]
 	add x16, x16, #8
 	sub x14, x14, #1
-	cbnz x14, 2158b
+	cbnz x14, 2155b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x16, x0, #256
@@ -17340,13 +17344,13 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x17, x17, x0
 	add x17, x17, #256
 	add x14, x12, #0
-2159:
+2156:
 	ldr x3, [x16, #0]
 	str x3, [x17, #0]
 	add x16, x16, #8
 	add x17, x17, #8
 	sub x14, x14, #1
-	cbnz x14, 2159b
+	cbnz x14, 2156b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x11, #0
@@ -17355,38 +17359,15 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	movz x7, #0, lsl #0
 	add x16, x8, #0
 	add x14, x12, #2
-2160:
+2157:
 	str x7, [x16, #0]
 	add x16, x16, #8
 	sub x14, x14, #1
-	cbnz x14, 2160b
-	lsl x6, x12, #6
-2161:
-	movz x7, #0, lsl #0
-	add x14, x12, #0
-	adds x3, x7, x7
-	add x16, x0, #256
-2162:
-	ldr x3, [x16, #0]
-	adcs x3, x3, x3
-	str x3, [x16, #0]
-	add x16, x16, #8
-	sub x14, x14, #1
-	cbnz x14, 2162b
-	add x16, x11, #0
-	add x16, x16, x0
-	add x16, x16, #256
-	add x14, x12, #1
-2163:
-	ldr x3, [x16, #0]
-	adcs x3, x3, x3
-	str x3, [x16, #0]
-	add x16, x16, #8
-	sub x14, x14, #1
-	cbnz x14, 2163b
-	movz x7, #0, lsl #0
-	add x14, x12, #0
-	subs x3, x7, x7
+	cbnz x14, 2157b
+	add x13, x0, #256
+	lsl x3, x12, #3
+	add x13, x13, x3
+	add x6, x12, #0
 	add x16, x11, #0
 	add x16, x16, x0
 	add x16, x16, #256
@@ -17394,54 +17375,81 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x17, x17, x17
 	add x17, x17, x0
 	add x17, x17, #256
-	add x13, x11, #0
-	add x13, x13, x13
-	add x13, x13, x11
-	add x13, x13, x0
-	add x13, x13, #256
-2164:
+	add x8, x11, #0
+	add x8, x8, x8
+	add x8, x8, x11
+	add x8, x8, x0
+	add x8, x8, #256
+2158:
+	sub x13, x13, #8
+	ldr x14, [x13, #0]
+	movz x15, #0, lsl #0
+	movz x9, #64, lsl #0
+	adds x14, x14, x14
+2159:
+	ldr x3, [x16, #0]
+	adcs x3, x3, x3
+	str x3, [x16, #0]
+	ldr x3, [x16, #8]
+	adcs x3, x3, x3
+	str x3, [x16, #8]
+	ldr x3, [x16, #16]
+	adcs x3, x3, x3
+	str x3, [x16, #16]
+	ldr x3, [x16, #24]
+	adcs x3, x3, x3
+	str x3, [x16, #24]
+	ldr x3, [x16, #32]
+	adcs x3, x3, x3
+	str x3, [x16, #32]
+	subs x3, x7, x7
 	ldr x3, [x16, #0]
 	ldr x4, [x17, #0]
 	sbcs x3, x3, x4
-	str x3, [x13, #0]
-	add x16, x16, #8
-	add x17, x17, #8
-	add x13, x13, #8
-	sub x14, x14, #1
-	cbnz x14, 2164b
+	str x3, [x8, #0]
+	ldr x3, [x16, #8]
+	ldr x4, [x17, #8]
+	sbcs x3, x3, x4
+	str x3, [x8, #8]
+	ldr x3, [x16, #16]
+	ldr x4, [x17, #16]
+	sbcs x3, x3, x4
+	str x3, [x8, #16]
+	ldr x3, [x16, #24]
+	ldr x4, [x17, #24]
+	sbcs x3, x3, x4
+	str x3, [x8, #24]
+	ldr x3, [x16, #32]
+	ldr x4, [x17, #32]
+	sbcs x3, x3, x4
+	str x3, [x8, #32]
 	ldr x3, [x16, #0]
-	sbcs x3, x3, x7
-	str x3, [x13, #0]
-	sub x4, x7, #1
-	csel x15, x4, x7, hs
-	add x16, x11, #0
-	add x16, x16, x16
-	add x16, x16, x11
-	add x16, x16, x0
-	add x16, x16, #256
-	add x17, x11, #0
-	add x17, x17, x0
-	add x17, x17, #256
-	add x14, x12, #1
-	movz x3, #1, lsl #0
-	subs x3, x15, x3
-2165:
-	ldr x3, [x16, #0]
-	ldr x4, [x17, #0]
-	csel x4, x3, x4, hs
-	str x4, [x17, #0]
-	add x16, x16, #8
-	add x17, x17, #8
-	sub x14, x14, #1
-	cbnz x14, 2165b
-	add x16, x0, #256
-	ldr x3, [x16, #0]
-	movz x4, #1, lsl #0
-	and x4, x4, x15
-	orr x3, x3, x4
+	ldr x4, [x8, #0]
+	csel x3, x4, x3, hs
 	str x3, [x16, #0]
+	ldr x3, [x16, #8]
+	ldr x4, [x8, #8]
+	csel x3, x4, x3, hs
+	str x3, [x16, #8]
+	ldr x3, [x16, #16]
+	ldr x4, [x8, #16]
+	csel x3, x4, x3, hs
+	str x3, [x16, #16]
+	ldr x3, [x16, #24]
+	ldr x4, [x8, #24]
+	csel x3, x4, x3, hs
+	str x3, [x16, #24]
+	ldr x3, [x16, #32]
+	ldr x4, [x8, #32]
+	csel x3, x4, x3, hs
+	str x3, [x16, #32]
+	adcs x15, x15, x15
+	adds x14, x14, x14
+	sub x9, x9, #1
+	cbnz x9, 2159b
+	str x15, [x13, #0]
 	sub x6, x6, #1
-	cbnz x6, 2161b
+	cbnz x6, 2158b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	movz x7, #0, lsl #0
@@ -17462,7 +17470,7 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x8, x8, x11
 	add x8, x8, x0
 	add x8, x8, #256
-2166:
+2160:
 	ldr x3, [x16, #0]
 	ldr x4, [x17, #0]
 	and x4, x4, x15
@@ -17472,7 +17480,7 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x17, x17, #8
 	add x8, x8, #8
 	sub x14, x14, #1
-	cbnz x14, 2166b
+	cbnz x14, 2160b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x16, x11, #0
@@ -17490,13 +17498,13 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x14, x12, #0
 	adds x3, x7, x7
 	add x16, x0, #256
-2167:
+2161:
 	ldr x3, [x16, #0]
 	adcs x3, x3, x3
 	str x3, [x16, #0]
 	add x16, x16, #8
 	sub x14, x14, #1
-	cbnz x14, 2167b
+	cbnz x14, 2161b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x11, #0
@@ -17511,21 +17519,21 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x15, [x0, #176]
 	movz x2, #0, lsl #0
 	movz x6, #7, lsl #0
-2168:
+2162:
 	and x5, x2, x6
-	cbz x5, 2169f
-	b 2170f
-2169:
+	cbz x5, 2163f
+	b 2164f
+2163:
 	add x5, x8, x2
 	ldr x3, [x5, #0]
 	and x3, x3, x15
-2170:
+2164:
 	sub x1, x1, #1
 	strb w3, [x1, #0]
 	lsr x3, x3, #8
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2168b
+	cbnz x9, 2162b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x0, #256
@@ -17535,25 +17543,25 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x15, [x0, #176]
 	movz x2, #0, lsl #0
 	movz x6, #7, lsl #0
-2171:
+2165:
 	and x5, x2, x6
-	cbz x5, 2172f
-	b 2173f
-2172:
+	cbz x5, 2166f
+	b 2167f
+2166:
 	add x5, x8, x2
 	ldr x3, [x5, #0]
 	and x3, x3, x15
-2173:
+2167:
 	sub x1, x1, #1
 	strb w3, [x1, #0]
 	lsr x3, x3, #8
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2171b
+	cbnz x9, 2165b
 	ldr x1, [x0, #160]
 	ldrb w3, [x1, #0]
 	lsr x3, x3, #7
-	cbz x3, 2174f
+	cbz x3, 2168f
 	ldr x0, [sp, #40]
 	movz x1, #5120, lsl #0
 	ldr x2, [sp, #112]
@@ -17564,22 +17572,22 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x4, sp, #152
 	bl {vg_dsa_probable_prime_2048}
 	add w0, w0, #0
-	cbz x0, 2176f
+	cbz x0, 2170f
 	ldr x3, [sp, #152]
 	ldr x4, [sp, #128]
 	add x3, x3, x4
 	str x3, [sp, #128]
-	b 2177f
-2176:
-2177:
+	b 2171f
+2170:
+2171:
 	lsr x3, x0, #1
 	add x0, x0, x3
 	str x0, [sp, #152]
-	b 2175f
-2174:
+	b 2169f
+2168:
 	movz x3, #3, lsl #0
 	str x3, [sp, #152]
-2175:
+2169:
 	ldr x0, [sp, #40]
 	movz x3, #27840, lsl #0
 	add x0, x0, x3
@@ -17587,9 +17595,9 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	str x3, [x0, #16]
 	ldr x3, [x0, #16]
 	sub x3, x3, #3
-	cbz x3, 2178f
-	b 2179f
-2178:
+	cbz x3, 2172f
+	b 2173f
+2172:
 	ldr x3, [x0, #0]
 	add x3, x3, #1
 	str x3, [x0, #0]
@@ -17601,23 +17609,23 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	movz x7, #0, lsl #0
 	movz x4, #1, lsl #0
 	csel x5, x4, x7, hs
-	cbz x5, 2180f
+	cbz x5, 2174f
 	movz x3, #2, lsl #0
 	str x3, [x0, #16]
-	b 2181f
-2180:
+	b 2175f
+2174:
 	movz x3, #3, lsl #0
 	str x3, [x0, #16]
-2181:
-2179:
+2175:
+2173:
 	ldr x3, [x0, #16]
 	sub x3, x3, #3
-	cbz x3, 2122b
+	cbz x3, 2119b
 	ldr x3, [sp, #152]
 	sub x3, x3, #1
-	cbz x3, 2182f
-	b 2183f
-2182:
+	cbz x3, 2176f
+	b 2177f
+2176:
 	ldr x3, [sp, #112]
 	ldr x4, [sp, #128]
 	ldr x6, [sp, #120]
@@ -17640,12 +17648,12 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	lsl x4, x4, #2
 	sub x3, x0, x4
 	sub x4, x3, #3
-	cbz x4, 2184f
+	cbz x4, 2178f
 	add x3, x3, x3
 	sub x3, x3, #1
 	str x3, [sp, #152]
-	b 2185f
-2184:
+	b 2179f
+2178:
 	ldr x4, [sp, #104]
 	movz x5, #32768, lsl #0
 	subs x4, x4, x5
@@ -17653,37 +17661,37 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	movz x5, #0, lsl #0
 	csel x3, x4, x5, hs
 	str x3, [sp, #152]
-2185:
-2183:
-2121:
+2179:
+2177:
+2118:
 	ldr x0, [sp, #152]
 	sub x0, x0, #3
-	cbz x0, 2186f
-	b 2187f
-2186:
+	cbz x0, 2180f
+	b 2181f
+2180:
 	ldr x3, [sp, #464]
 	sub x3, x3, #1
 	str x3, [sp, #464]
-2187:
-	b 2112f
-2111:
+2181:
+	b 2109f
+2108:
 	movz x3, #0, lsl #0
 	str x3, [sp, #152]
-2112:
-	b 2110f
 2109:
+	b 2107f
+2106:
 	movz x3, #2, lsl #0
 	str x3, [sp, #152]
-2110:
+2107:
 	ldr x0, [sp, #152]
 	sub x0, x0, #3
-	cbz x0, 2108b
+	cbz x0, 2105b
 	ldr x14, [sp, #456]
 	ldr x15, [sp, #448]
 	ldr x3, [sp, #152]
-	cbz x3, 2188f
+	cbz x3, 2182f
 	sub x3, x3, #1
-	cbz x3, 2190f
+	cbz x3, 2184f
 	movz x11, #0, lsl #0
 	movz x10, #0, lsl #0
 	ldr x12, [sp, #472]
@@ -17692,8 +17700,8 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	str x12, [x15, #0]
 	movz x9, #3, lsl #0
 	str x9, [sp, #472]
-	b 2191f
-2190:
+	b 2185f
+2184:
 	movz x11, #0, lsl #0
 	movz x10, #0, lsl #0
 	ldr x12, [sp, #128]
@@ -17702,9 +17710,9 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	str x12, [x15, #0]
 	movz x9, #1, lsl #0
 	str x9, [sp, #472]
-2191:
-	b 2189f
-2188:
+2185:
+	b 2183f
+2182:
 	ldr x10, [sp, #120]
 	ldr x9, [sp, #472]
 	sub x10, x10, x9
@@ -17715,7 +17723,7 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	movz x12, #0, lsl #0
 	movz x13, #1, lsl #0
 	csel x12, x13, x12, hs
-	cbz x12, 2192f
+	cbz x12, 2186f
 	movz x11, #0, lsl #0
 	movz x10, #0, lsl #0
 	ldr x12, [sp, #472]
@@ -17724,8 +17732,8 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	str x12, [x15, #0]
 	movz x9, #3, lsl #0
 	str x9, [sp, #472]
-	b 2193f
-2192:
+	b 2187f
+2186:
 	lsl x12, x9, #8
 	subs x13, x10, x12
 	csel x10, x10, x12, hs
@@ -17739,11 +17747,11 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	str x12, [x15, #0]
 	movz x9, #0, lsl #0
 	str x9, [sp, #472]
-2193:
-2189:
+2187:
+2183:
 	ldr x3, [sp, #152]
 	sub x3, x3, #1
-	cbz x3, 2194f
+	cbz x3, 2188f
 	ldr x3, [sp, #48]
 	str x3, [sp, #152]
 	ldr x3, [sp, #56]
@@ -17751,32 +17759,32 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x11, [sp, #152]
 	ldr x12, [sp, #168]
 	movz x13, #0, lsl #0
-2196:
+2190:
 	strb w13, [x11, #0]
 	add x11, x11, #1
 	sub x12, x12, #1
-	cbnz x12, 2196b
+	cbnz x12, 2190b
 	movz x0, #0, lsl #0
-	b 2195f
-2194:
+	b 2189f
+2188:
 	ldr x12, [sp, #40]
 	movz x3, #27008, lsl #0
 	add x12, x12, x3
 	ldr x2, [sp, #48]
 	ldr x9, [sp, #56]
-	cbnz x9, 2197f
-	b 2198f
-2197:
-2199:
+	cbnz x9, 2191f
+	b 2192f
+2191:
+2193:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2199b
-2198:
+	cbnz x9, 2193b
+2192:
 	movz x0, #1, lsl #0
-2195:
+2189:
 	ldr x0, [sp, #472]
 23:
 	b 21f
@@ -17784,11 +17792,11 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	movz x3, #20, lsl #0
 	str x3, [sp, #144]
 	str x3, [sp, #208]
-2200:
+2194:
 	ldr x0, [sp, #128]
 	ldr x3, [sp, #464]
 	str x0, [sp, #472]
-	cbz x3, 2201f
+	cbz x3, 2195f
 	ldr x3, [sp, #120]
 	sub x3, x3, x0
 	movz x4, #20, lsl #0
@@ -17796,7 +17804,7 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	movz x4, #1, lsl #0
 	movz x5, #0, lsl #0
 	csel x3, x5, x4, hs
-	cbnz x3, 2203f
+	cbnz x3, 2197f
 	ldr x3, [sp, #112]
 	str x3, [sp, #88]
 	add x3, x3, x0
@@ -17816,7 +17824,7 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	str x3, [sp, #208]
 	ldr x0, [sp, #208]
 	sub x0, x0, #20
-	cbz x0, 2205f
+	cbz x0, 2199f
 	ldr x0, [sp, #96]
 	add x0, x0, #3072
 	bl {vg_sha256_init}
@@ -17836,8 +17844,8 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x3, [sp, #96]
 	add x3, x3, #3520
 	bl {vg_sha256_finalize_scratch_sha2}
-	b 2206f
-2205:
+	b 2200f
+2199:
 	ldr x0, [sp, #96]
 	add x0, x0, #3072
 	bl {vg_sha1_init}
@@ -17857,24 +17865,24 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x3, [sp, #96]
 	add x3, x3, #3520
 	bl {vg_sha1_finalize_scratch_sha2}
-2206:
+2200:
 	ldr x2, [sp, #0]
 	ldr x12, [sp, #96]
 	add x12, x12, #3328
 	ldr x9, [sp, #208]
 	add x13, x2, #0
 	add x14, x9, #0
-	cbnz x9, 2207f
-	b 2208f
-2207:
-2209:
+	cbnz x9, 2201f
+	b 2202f
+2201:
+2203:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2209b
-2208:
+	cbnz x9, 2203b
+2202:
 	ldrb w0, [x13, #0]
 	movz x4, #128, lsl #0
 	orr x0, x0, x4
@@ -17895,22 +17903,22 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x4, sp, #152
 	bl {vg_dsa_probable_prime_160}
 	add w0, w0, #0
-	cbz x0, 2210f
+	cbz x0, 2204f
 	ldr x3, [sp, #152]
 	ldr x4, [sp, #128]
 	add x3, x3, x4
 	str x3, [sp, #128]
-	b 2211f
-2210:
-2211:
+	b 2205f
+2204:
+2205:
 	lsr x3, x0, #1
 	add x0, x0, x3
 	str x0, [sp, #152]
 	ldr x3, [sp, #152]
 	sub x3, x3, #1
-	cbz x3, 2212f
-	b 2213f
-2212:
+	cbz x3, 2206f
+	b 2207f
+2206:
 	ldr x0, [sp, #40]
 	movz x3, #27840, lsl #0
 	add x0, x0, x3
@@ -17918,7 +17926,7 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	str x3, [x0, #0]
 	movz x3, #1, lsl #0
 	str x3, [x0, #8]
-2214:
+2208:
 	ldr x3, [x0, #8]
 	ldr x4, [sp, #40]
 	movz x5, #25024, lsl #0
@@ -18035,17 +18043,17 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x2, [sp, #32]
 	add x2, x2, #120
 	movz x9, #20, lsl #0
-	cbnz x9, 2215f
-	b 2216f
-2215:
-2217:
+	cbnz x9, 2209f
+	b 2210f
+2209:
+2211:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2217b
-2216:
+	cbnz x9, 2211b
+2210:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -18154,17 +18162,17 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x2, [sp, #32]
 	add x2, x2, #100
 	movz x9, #20, lsl #0
-	cbnz x9, 2218f
-	b 2219f
-2218:
-2220:
+	cbnz x9, 2212f
+	b 2213f
+2212:
+2214:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2220b
-2219:
+	cbnz x9, 2214b
+2213:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -18273,17 +18281,17 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x2, [sp, #32]
 	add x2, x2, #80
 	movz x9, #20, lsl #0
-	cbnz x9, 2221f
-	b 2222f
-2221:
-2223:
+	cbnz x9, 2215f
+	b 2216f
+2215:
+2217:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2223b
-2222:
+	cbnz x9, 2217b
+2216:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -18392,17 +18400,17 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x2, [sp, #32]
 	add x2, x2, #60
 	movz x9, #20, lsl #0
-	cbnz x9, 2224f
-	b 2225f
-2224:
-2226:
+	cbnz x9, 2218f
+	b 2219f
+2218:
+2220:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2226b
-2225:
+	cbnz x9, 2220b
+2219:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -18511,17 +18519,17 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x2, [sp, #32]
 	add x2, x2, #40
 	movz x9, #20, lsl #0
-	cbnz x9, 2227f
-	b 2228f
-2227:
-2229:
+	cbnz x9, 2221f
+	b 2222f
+2221:
+2223:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2229b
-2228:
+	cbnz x9, 2223b
+2222:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -18630,17 +18638,17 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x2, [sp, #32]
 	add x2, x2, #20
 	movz x9, #20, lsl #0
-	cbnz x9, 2230f
-	b 2231f
-2230:
-2232:
+	cbnz x9, 2224f
+	b 2225f
+2224:
+2226:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2232b
-2231:
+	cbnz x9, 2226b
+2225:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -18749,34 +18757,34 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x2, [sp, #32]
 	add x2, x2, #0
 	movz x9, #20, lsl #0
-	cbnz x9, 2233f
-	b 2234f
-2233:
-2235:
+	cbnz x9, 2227f
+	b 2228f
+2227:
+2229:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2235b
-2234:
+	cbnz x9, 2229b
+2228:
 	ldr x2, [sp, #0]
 	ldr x12, [sp, #32]
 	add x12, x12, #12
 	movz x9, #128, lsl #0
 	add x13, x2, #0
 	add x14, x9, #0
-	cbnz x9, 2236f
-	b 2237f
-2236:
-2238:
+	cbnz x9, 2230f
+	b 2231f
+2230:
+2232:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2238b
-2237:
+	cbnz x9, 2232b
+2231:
 	ldrb w0, [x13, #0]
 	movz x4, #128, lsl #0
 	orr x0, x0, x4
@@ -18844,11 +18852,11 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	movz x7, #0, lsl #0
 	add x16, x8, #0
 	add x14, x12, #2
-2239:
+2233:
 	str x7, [x16, #0]
 	add x16, x16, #8
 	sub x14, x14, #1
-	cbnz x14, 2239b
+	cbnz x14, 2233b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x0, #256
@@ -18856,21 +18864,21 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x2, [x0, #136]
 	movz x3, #0, lsl #0
 	movz x6, #7, lsl #0
-2240:
+2234:
 	sub x2, x2, #1
 	lsl x3, x3, #8
 	ldrb w4, [x1, #0]
 	add x3, x3, x4
 	add x1, x1, #1
 	and x5, x2, x6
-	cbz x5, 2241f
-	b 2242f
-2241:
+	cbz x5, 2235f
+	b 2236f
+2235:
 	add x5, x8, x2
 	str x3, [x5, #0]
 	movz x3, #0, lsl #0
-2242:
-	cbnz x2, 2240b
+2236:
+	cbnz x2, 2234b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x11, #0
@@ -18880,11 +18888,11 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	movz x7, #0, lsl #0
 	add x16, x8, #0
 	add x14, x12, #2
-2243:
+2237:
 	str x7, [x16, #0]
 	add x16, x16, #8
 	sub x14, x14, #1
-	cbnz x14, 2243b
+	cbnz x14, 2237b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x11, #0
@@ -18895,21 +18903,21 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x2, [x0, #152]
 	movz x3, #0, lsl #0
 	movz x6, #7, lsl #0
-2244:
+2238:
 	sub x2, x2, #1
 	lsl x3, x3, #8
 	ldrb w4, [x1, #0]
 	add x3, x3, x4
 	add x1, x1, #1
 	and x5, x2, x6
-	cbz x5, 2245f
-	b 2246f
-2245:
+	cbz x5, 2239f
+	b 2240f
+2239:
 	add x5, x8, x2
 	str x3, [x5, #0]
 	movz x3, #0, lsl #0
-2246:
-	cbnz x2, 2244b
+2240:
+	cbnz x2, 2238b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	movz x7, #0, lsl #0
@@ -18919,13 +18927,13 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x16, x16, x16
 	add x16, x16, x0
 	add x16, x16, #256
-2247:
+2241:
 	ldr x3, [x16, #0]
 	adcs x3, x3, x3
 	str x3, [x16, #0]
 	add x16, x16, #8
 	sub x14, x14, #1
-	cbnz x14, 2247b
+	cbnz x14, 2241b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x16, x0, #256
@@ -18935,13 +18943,13 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x17, x17, x0
 	add x17, x17, #256
 	add x14, x12, #0
-2248:
+2242:
 	ldr x3, [x16, #0]
 	str x3, [x17, #0]
 	add x16, x16, #8
 	add x17, x17, #8
 	sub x14, x14, #1
-	cbnz x14, 2248b
+	cbnz x14, 2242b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x11, #0
@@ -18950,38 +18958,15 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	movz x7, #0, lsl #0
 	add x16, x8, #0
 	add x14, x12, #2
-2249:
+2243:
 	str x7, [x16, #0]
 	add x16, x16, #8
 	sub x14, x14, #1
-	cbnz x14, 2249b
-	lsl x6, x12, #6
-2250:
-	movz x7, #0, lsl #0
-	add x14, x12, #0
-	adds x3, x7, x7
-	add x16, x0, #256
-2251:
-	ldr x3, [x16, #0]
-	adcs x3, x3, x3
-	str x3, [x16, #0]
-	add x16, x16, #8
-	sub x14, x14, #1
-	cbnz x14, 2251b
-	add x16, x11, #0
-	add x16, x16, x0
-	add x16, x16, #256
-	add x14, x12, #1
-2252:
-	ldr x3, [x16, #0]
-	adcs x3, x3, x3
-	str x3, [x16, #0]
-	add x16, x16, #8
-	sub x14, x14, #1
-	cbnz x14, 2252b
-	movz x7, #0, lsl #0
-	add x14, x12, #0
-	subs x3, x7, x7
+	cbnz x14, 2243b
+	add x13, x0, #256
+	lsl x3, x12, #3
+	add x13, x13, x3
+	add x6, x12, #0
 	add x16, x11, #0
 	add x16, x16, x0
 	add x16, x16, #256
@@ -18989,54 +18974,81 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x17, x17, x17
 	add x17, x17, x0
 	add x17, x17, #256
-	add x13, x11, #0
-	add x13, x13, x13
-	add x13, x13, x11
-	add x13, x13, x0
-	add x13, x13, #256
-2253:
+	add x8, x11, #0
+	add x8, x8, x8
+	add x8, x8, x11
+	add x8, x8, x0
+	add x8, x8, #256
+2244:
+	sub x13, x13, #8
+	ldr x14, [x13, #0]
+	movz x15, #0, lsl #0
+	movz x9, #64, lsl #0
+	adds x14, x14, x14
+2245:
+	ldr x3, [x16, #0]
+	adcs x3, x3, x3
+	str x3, [x16, #0]
+	ldr x3, [x16, #8]
+	adcs x3, x3, x3
+	str x3, [x16, #8]
+	ldr x3, [x16, #16]
+	adcs x3, x3, x3
+	str x3, [x16, #16]
+	ldr x3, [x16, #24]
+	adcs x3, x3, x3
+	str x3, [x16, #24]
+	ldr x3, [x16, #32]
+	adcs x3, x3, x3
+	str x3, [x16, #32]
+	subs x3, x7, x7
 	ldr x3, [x16, #0]
 	ldr x4, [x17, #0]
 	sbcs x3, x3, x4
-	str x3, [x13, #0]
-	add x16, x16, #8
-	add x17, x17, #8
-	add x13, x13, #8
-	sub x14, x14, #1
-	cbnz x14, 2253b
+	str x3, [x8, #0]
+	ldr x3, [x16, #8]
+	ldr x4, [x17, #8]
+	sbcs x3, x3, x4
+	str x3, [x8, #8]
+	ldr x3, [x16, #16]
+	ldr x4, [x17, #16]
+	sbcs x3, x3, x4
+	str x3, [x8, #16]
+	ldr x3, [x16, #24]
+	ldr x4, [x17, #24]
+	sbcs x3, x3, x4
+	str x3, [x8, #24]
+	ldr x3, [x16, #32]
+	ldr x4, [x17, #32]
+	sbcs x3, x3, x4
+	str x3, [x8, #32]
 	ldr x3, [x16, #0]
-	sbcs x3, x3, x7
-	str x3, [x13, #0]
-	sub x4, x7, #1
-	csel x15, x4, x7, hs
-	add x16, x11, #0
-	add x16, x16, x16
-	add x16, x16, x11
-	add x16, x16, x0
-	add x16, x16, #256
-	add x17, x11, #0
-	add x17, x17, x0
-	add x17, x17, #256
-	add x14, x12, #1
-	movz x3, #1, lsl #0
-	subs x3, x15, x3
-2254:
-	ldr x3, [x16, #0]
-	ldr x4, [x17, #0]
-	csel x4, x3, x4, hs
-	str x4, [x17, #0]
-	add x16, x16, #8
-	add x17, x17, #8
-	sub x14, x14, #1
-	cbnz x14, 2254b
-	add x16, x0, #256
-	ldr x3, [x16, #0]
-	movz x4, #1, lsl #0
-	and x4, x4, x15
-	orr x3, x3, x4
+	ldr x4, [x8, #0]
+	csel x3, x4, x3, hs
 	str x3, [x16, #0]
+	ldr x3, [x16, #8]
+	ldr x4, [x8, #8]
+	csel x3, x4, x3, hs
+	str x3, [x16, #8]
+	ldr x3, [x16, #16]
+	ldr x4, [x8, #16]
+	csel x3, x4, x3, hs
+	str x3, [x16, #16]
+	ldr x3, [x16, #24]
+	ldr x4, [x8, #24]
+	csel x3, x4, x3, hs
+	str x3, [x16, #24]
+	ldr x3, [x16, #32]
+	ldr x4, [x8, #32]
+	csel x3, x4, x3, hs
+	str x3, [x16, #32]
+	adcs x15, x15, x15
+	adds x14, x14, x14
+	sub x9, x9, #1
+	cbnz x9, 2245b
+	str x15, [x13, #0]
 	sub x6, x6, #1
-	cbnz x6, 2250b
+	cbnz x6, 2244b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	movz x7, #0, lsl #0
@@ -19057,7 +19069,7 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x8, x8, x11
 	add x8, x8, x0
 	add x8, x8, #256
-2255:
+2246:
 	ldr x3, [x16, #0]
 	ldr x4, [x17, #0]
 	and x4, x4, x15
@@ -19067,7 +19079,7 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x17, x17, #8
 	add x8, x8, #8
 	sub x14, x14, #1
-	cbnz x14, 2255b
+	cbnz x14, 2246b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x16, x11, #0
@@ -19085,13 +19097,13 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x14, x12, #0
 	adds x3, x7, x7
 	add x16, x0, #256
-2256:
+2247:
 	ldr x3, [x16, #0]
 	adcs x3, x3, x3
 	str x3, [x16, #0]
 	add x16, x16, #8
 	sub x14, x14, #1
-	cbnz x14, 2256b
+	cbnz x14, 2247b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x11, #0
@@ -19106,21 +19118,21 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x15, [x0, #176]
 	movz x2, #0, lsl #0
 	movz x6, #7, lsl #0
-2257:
+2248:
 	and x5, x2, x6
-	cbz x5, 2258f
-	b 2259f
-2258:
+	cbz x5, 2249f
+	b 2250f
+2249:
 	add x5, x8, x2
 	ldr x3, [x5, #0]
 	and x3, x3, x15
-2259:
+2250:
 	sub x1, x1, #1
 	strb w3, [x1, #0]
 	lsr x3, x3, #8
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2257b
+	cbnz x9, 2248b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x0, #256
@@ -19130,25 +19142,25 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x15, [x0, #176]
 	movz x2, #0, lsl #0
 	movz x6, #7, lsl #0
-2260:
+2251:
 	and x5, x2, x6
-	cbz x5, 2261f
-	b 2262f
-2261:
+	cbz x5, 2252f
+	b 2253f
+2252:
 	add x5, x8, x2
 	ldr x3, [x5, #0]
 	and x3, x3, x15
-2262:
+2253:
 	sub x1, x1, #1
 	strb w3, [x1, #0]
 	lsr x3, x3, #8
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2260b
+	cbnz x9, 2251b
 	ldr x1, [x0, #160]
 	ldrb w3, [x1, #0]
 	lsr x3, x3, #7
-	cbz x3, 2263f
+	cbz x3, 2254f
 	ldr x0, [sp, #40]
 	movz x1, #5120, lsl #0
 	ldr x2, [sp, #112]
@@ -19159,22 +19171,22 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	add x4, sp, #152
 	bl {vg_dsa_probable_prime_1024}
 	add w0, w0, #0
-	cbz x0, 2265f
+	cbz x0, 2256f
 	ldr x3, [sp, #152]
 	ldr x4, [sp, #128]
 	add x3, x3, x4
 	str x3, [sp, #128]
-	b 2266f
-2265:
-2266:
+	b 2257f
+2256:
+2257:
 	lsr x3, x0, #1
 	add x0, x0, x3
 	str x0, [sp, #152]
-	b 2264f
-2263:
+	b 2255f
+2254:
 	movz x3, #3, lsl #0
 	str x3, [sp, #152]
-2264:
+2255:
 	ldr x0, [sp, #40]
 	movz x3, #27840, lsl #0
 	add x0, x0, x3
@@ -19182,9 +19194,9 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	str x3, [x0, #16]
 	ldr x3, [x0, #16]
 	sub x3, x3, #3
-	cbz x3, 2267f
-	b 2268f
-2267:
+	cbz x3, 2258f
+	b 2259f
+2258:
 	ldr x3, [x0, #0]
 	add x3, x3, #1
 	str x3, [x0, #0]
@@ -19196,23 +19208,23 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	movz x7, #0, lsl #0
 	movz x4, #1, lsl #0
 	csel x5, x4, x7, hs
-	cbz x5, 2269f
+	cbz x5, 2260f
 	movz x3, #2, lsl #0
 	str x3, [x0, #16]
-	b 2270f
-2269:
+	b 2261f
+2260:
 	movz x3, #3, lsl #0
 	str x3, [x0, #16]
-2270:
-2268:
+2261:
+2259:
 	ldr x3, [x0, #16]
 	sub x3, x3, #3
-	cbz x3, 2214b
+	cbz x3, 2208b
 	ldr x3, [sp, #152]
 	sub x3, x3, #1
-	cbz x3, 2271f
-	b 2272f
-2271:
+	cbz x3, 2262f
+	b 2263f
+2262:
 	ldr x3, [sp, #112]
 	ldr x4, [sp, #128]
 	ldr x6, [sp, #120]
@@ -19235,12 +19247,12 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	lsl x4, x4, #2
 	sub x3, x0, x4
 	sub x4, x3, #3
-	cbz x4, 2273f
+	cbz x4, 2264f
 	add x3, x3, x3
 	sub x3, x3, #1
 	str x3, [sp, #152]
-	b 2274f
-2273:
+	b 2265f
+2264:
 	ldr x4, [sp, #104]
 	movz x5, #16384, lsl #0
 	subs x4, x4, x5
@@ -19248,37 +19260,37 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	movz x5, #0, lsl #0
 	csel x3, x4, x5, hs
 	str x3, [sp, #152]
-2274:
-2272:
-2213:
+2265:
+2263:
+2207:
 	ldr x0, [sp, #152]
 	sub x0, x0, #3
-	cbz x0, 2275f
-	b 2276f
-2275:
+	cbz x0, 2266f
+	b 2267f
+2266:
 	ldr x3, [sp, #464]
 	sub x3, x3, #1
 	str x3, [sp, #464]
-2276:
-	b 2204f
-2203:
+2267:
+	b 2198f
+2197:
 	movz x3, #0, lsl #0
 	str x3, [sp, #152]
-2204:
-	b 2202f
-2201:
+2198:
+	b 2196f
+2195:
 	movz x3, #2, lsl #0
 	str x3, [sp, #152]
-2202:
+2196:
 	ldr x0, [sp, #152]
 	sub x0, x0, #3
-	cbz x0, 2200b
+	cbz x0, 2194b
 	ldr x14, [sp, #456]
 	ldr x15, [sp, #448]
 	ldr x3, [sp, #152]
-	cbz x3, 2277f
+	cbz x3, 2268f
 	sub x3, x3, #1
-	cbz x3, 2279f
+	cbz x3, 2270f
 	movz x11, #0, lsl #0
 	movz x10, #0, lsl #0
 	ldr x12, [sp, #472]
@@ -19287,8 +19299,8 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	str x12, [x15, #0]
 	movz x9, #3, lsl #0
 	str x9, [sp, #472]
-	b 2280f
-2279:
+	b 2271f
+2270:
 	movz x11, #0, lsl #0
 	movz x10, #0, lsl #0
 	ldr x12, [sp, #128]
@@ -19297,9 +19309,9 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	str x12, [x15, #0]
 	movz x9, #1, lsl #0
 	str x9, [sp, #472]
-2280:
-	b 2278f
-2277:
+2271:
+	b 2269f
+2268:
 	ldr x10, [sp, #120]
 	ldr x9, [sp, #472]
 	sub x10, x10, x9
@@ -19310,7 +19322,7 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	movz x12, #0, lsl #0
 	movz x13, #1, lsl #0
 	csel x12, x13, x12, hs
-	cbz x12, 2281f
+	cbz x12, 2272f
 	movz x11, #0, lsl #0
 	movz x10, #0, lsl #0
 	ldr x12, [sp, #472]
@@ -19319,8 +19331,8 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	str x12, [x15, #0]
 	movz x9, #3, lsl #0
 	str x9, [sp, #472]
-	b 2282f
-2281:
+	b 2273f
+2272:
 	lsl x12, x9, #8
 	subs x13, x10, x12
 	csel x10, x10, x12, hs
@@ -19334,11 +19346,11 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	str x12, [x15, #0]
 	movz x9, #0, lsl #0
 	str x9, [sp, #472]
-2282:
-2278:
+2273:
+2269:
 	ldr x3, [sp, #152]
 	sub x3, x3, #1
-	cbz x3, 2283f
+	cbz x3, 2274f
 	ldr x3, [sp, #48]
 	str x3, [sp, #152]
 	ldr x3, [sp, #56]
@@ -19346,32 +19358,32 @@ vg_dsa_parameter_search_sha1_sha2_sha256_sha2:
 	ldr x11, [sp, #152]
 	ldr x12, [sp, #168]
 	movz x13, #0, lsl #0
-2285:
+2276:
 	strb w13, [x11, #0]
 	add x11, x11, #1
 	sub x12, x12, #1
-	cbnz x12, 2285b
+	cbnz x12, 2276b
 	movz x0, #0, lsl #0
-	b 2284f
-2283:
+	b 2275f
+2274:
 	ldr x12, [sp, #40]
 	movz x3, #27008, lsl #0
 	add x12, x12, x3
 	ldr x2, [sp, #48]
 	ldr x9, [sp, #56]
-	cbnz x9, 2286f
-	b 2287f
-2286:
-2288:
+	cbnz x9, 2277f
+	b 2278f
+2277:
+2279:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2288b
-2287:
+	cbnz x9, 2279b
+2278:
 	movz x0, #1, lsl #0
-2284:
+2275:
 	ldr x0, [sp, #472]
 21:
 	ldr x9, [sp, #384]
@@ -21815,33 +21827,10 @@ vg_dsa_parameter_search:
 	add x16, x16, #8
 	sub x14, x14, #1
 	cbnz x14, 268b
-	lsl x6, x12, #6
-269:
-	movz x7, #0, lsl #0
-	add x14, x12, #0
-	adds x3, x7, x7
-	add x16, x0, #256
-270:
-	ldr x3, [x16, #0]
-	adcs x3, x3, x3
-	str x3, [x16, #0]
-	add x16, x16, #8
-	sub x14, x14, #1
-	cbnz x14, 270b
-	add x16, x11, #0
-	add x16, x16, x0
-	add x16, x16, #256
-	add x14, x12, #1
-271:
-	ldr x3, [x16, #0]
-	adcs x3, x3, x3
-	str x3, [x16, #0]
-	add x16, x16, #8
-	sub x14, x14, #1
-	cbnz x14, 271b
-	movz x7, #0, lsl #0
-	add x14, x12, #0
-	subs x3, x7, x7
+	add x13, x0, #256
+	lsl x3, x12, #3
+	add x13, x13, x3
+	add x6, x12, #0
 	add x16, x11, #0
 	add x16, x16, x0
 	add x16, x16, #256
@@ -21849,52 +21838,79 @@ vg_dsa_parameter_search:
 	add x17, x17, x17
 	add x17, x17, x0
 	add x17, x17, #256
-	add x13, x11, #0
-	add x13, x13, x13
-	add x13, x13, x11
-	add x13, x13, x0
-	add x13, x13, #256
-272:
+	add x8, x11, #0
+	add x8, x8, x8
+	add x8, x8, x11
+	add x8, x8, x0
+	add x8, x8, #256
+269:
+	sub x13, x13, #8
+	ldr x14, [x13, #0]
+	movz x15, #0, lsl #0
+	movz x9, #64, lsl #0
+	adds x14, x14, x14
+270:
+	ldr x3, [x16, #0]
+	adcs x3, x3, x3
+	str x3, [x16, #0]
+	ldr x3, [x16, #8]
+	adcs x3, x3, x3
+	str x3, [x16, #8]
+	ldr x3, [x16, #16]
+	adcs x3, x3, x3
+	str x3, [x16, #16]
+	ldr x3, [x16, #24]
+	adcs x3, x3, x3
+	str x3, [x16, #24]
+	ldr x3, [x16, #32]
+	adcs x3, x3, x3
+	str x3, [x16, #32]
+	subs x3, x7, x7
 	ldr x3, [x16, #0]
 	ldr x4, [x17, #0]
 	sbcs x3, x3, x4
-	str x3, [x13, #0]
-	add x16, x16, #8
-	add x17, x17, #8
-	add x13, x13, #8
-	sub x14, x14, #1
-	cbnz x14, 272b
+	str x3, [x8, #0]
+	ldr x3, [x16, #8]
+	ldr x4, [x17, #8]
+	sbcs x3, x3, x4
+	str x3, [x8, #8]
+	ldr x3, [x16, #16]
+	ldr x4, [x17, #16]
+	sbcs x3, x3, x4
+	str x3, [x8, #16]
+	ldr x3, [x16, #24]
+	ldr x4, [x17, #24]
+	sbcs x3, x3, x4
+	str x3, [x8, #24]
+	ldr x3, [x16, #32]
+	ldr x4, [x17, #32]
+	sbcs x3, x3, x4
+	str x3, [x8, #32]
 	ldr x3, [x16, #0]
-	sbcs x3, x3, x7
-	str x3, [x13, #0]
-	sub x4, x7, #1
-	csel x15, x4, x7, hs
-	add x16, x11, #0
-	add x16, x16, x16
-	add x16, x16, x11
-	add x16, x16, x0
-	add x16, x16, #256
-	add x17, x11, #0
-	add x17, x17, x0
-	add x17, x17, #256
-	add x14, x12, #1
-	movz x3, #1, lsl #0
-	subs x3, x15, x3
-273:
-	ldr x3, [x16, #0]
-	ldr x4, [x17, #0]
-	csel x4, x3, x4, hs
-	str x4, [x17, #0]
-	add x16, x16, #8
-	add x17, x17, #8
-	sub x14, x14, #1
-	cbnz x14, 273b
-	add x16, x0, #256
-	ldr x3, [x16, #0]
-	movz x4, #1, lsl #0
-	and x4, x4, x15
-	orr x3, x3, x4
+	ldr x4, [x8, #0]
+	csel x3, x4, x3, hs
 	str x3, [x16, #0]
+	ldr x3, [x16, #8]
+	ldr x4, [x8, #8]
+	csel x3, x4, x3, hs
+	str x3, [x16, #8]
+	ldr x3, [x16, #16]
+	ldr x4, [x8, #16]
+	csel x3, x4, x3, hs
+	str x3, [x16, #16]
+	ldr x3, [x16, #24]
+	ldr x4, [x8, #24]
+	csel x3, x4, x3, hs
+	str x3, [x16, #24]
+	ldr x3, [x16, #32]
+	ldr x4, [x8, #32]
+	csel x3, x4, x3, hs
+	str x3, [x16, #32]
+	adcs x15, x15, x15
+	adds x14, x14, x14
+	sub x9, x9, #1
+	cbnz x9, 270b
+	str x15, [x13, #0]
 	sub x6, x6, #1
 	cbnz x6, 269b
 	ldr x12, [x0, #48]
@@ -21917,7 +21933,7 @@ vg_dsa_parameter_search:
 	add x8, x8, x11
 	add x8, x8, x0
 	add x8, x8, #256
-274:
+271:
 	ldr x3, [x16, #0]
 	ldr x4, [x17, #0]
 	and x4, x4, x15
@@ -21927,7 +21943,7 @@ vg_dsa_parameter_search:
 	add x17, x17, #8
 	add x8, x8, #8
 	sub x14, x14, #1
-	cbnz x14, 274b
+	cbnz x14, 271b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x16, x11, #0
@@ -21945,13 +21961,13 @@ vg_dsa_parameter_search:
 	add x14, x12, #0
 	adds x3, x7, x7
 	add x16, x0, #256
-275:
+272:
 	ldr x3, [x16, #0]
 	adcs x3, x3, x3
 	str x3, [x16, #0]
 	add x16, x16, #8
 	sub x14, x14, #1
-	cbnz x14, 275b
+	cbnz x14, 272b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x11, #0
@@ -21961,6 +21977,30 @@ vg_dsa_parameter_search:
 	add x8, x8, x0
 	add x8, x8, #256
 	ldr x1, [x0, #160]
+	ldr x9, [x0, #136]
+	add x1, x1, x9
+	ldr x15, [x0, #176]
+	movz x2, #0, lsl #0
+	movz x6, #7, lsl #0
+273:
+	and x5, x2, x6
+	cbz x5, 274f
+	b 275f
+274:
+	add x5, x8, x2
+	ldr x3, [x5, #0]
+	and x3, x3, x15
+275:
+	sub x1, x1, #1
+	strb w3, [x1, #0]
+	lsr x3, x3, #8
+	add x2, x2, #1
+	sub x9, x9, #1
+	cbnz x9, 273b
+	ldr x12, [x0, #48]
+	ldr x11, [x0, #224]
+	add x8, x0, #256
+	ldr x1, [x0, #168]
 	ldr x9, [x0, #136]
 	add x1, x1, x9
 	ldr x15, [x0, #176]
@@ -21981,34 +22021,10 @@ vg_dsa_parameter_search:
 	add x2, x2, #1
 	sub x9, x9, #1
 	cbnz x9, 276b
-	ldr x12, [x0, #48]
-	ldr x11, [x0, #224]
-	add x8, x0, #256
-	ldr x1, [x0, #168]
-	ldr x9, [x0, #136]
-	add x1, x1, x9
-	ldr x15, [x0, #176]
-	movz x2, #0, lsl #0
-	movz x6, #7, lsl #0
-279:
-	and x5, x2, x6
-	cbz x5, 280f
-	b 281f
-280:
-	add x5, x8, x2
-	ldr x3, [x5, #0]
-	and x3, x3, x15
-281:
-	sub x1, x1, #1
-	strb w3, [x1, #0]
-	lsr x3, x3, #8
-	add x2, x2, #1
-	sub x9, x9, #1
-	cbnz x9, 279b
 	ldr x1, [x0, #160]
 	ldrb w3, [x1, #0]
 	lsr x3, x3, #7
-	cbz x3, 282f
+	cbz x3, 279f
 	ldr x0, [sp, #40]
 	movz x1, #5120, lsl #0
 	ldr x2, [sp, #112]
@@ -22019,22 +22035,22 @@ vg_dsa_parameter_search:
 	add x4, sp, #152
 	bl {vg_dsa_probable_prime_3072}
 	add w0, w0, #0
-	cbz x0, 284f
+	cbz x0, 281f
 	ldr x3, [sp, #152]
 	ldr x4, [sp, #128]
 	add x3, x3, x4
 	str x3, [sp, #128]
-	b 285f
-284:
-285:
+	b 282f
+281:
+282:
 	lsr x3, x0, #1
 	add x0, x0, x3
 	str x0, [sp, #152]
-	b 283f
-282:
+	b 280f
+279:
 	movz x3, #3, lsl #0
 	str x3, [sp, #152]
-283:
+280:
 	ldr x0, [sp, #40]
 	movz x3, #27840, lsl #0
 	add x0, x0, x3
@@ -22042,9 +22058,9 @@ vg_dsa_parameter_search:
 	str x3, [x0, #16]
 	ldr x3, [x0, #16]
 	sub x3, x3, #3
-	cbz x3, 286f
-	b 287f
-286:
+	cbz x3, 283f
+	b 284f
+283:
 	ldr x3, [x0, #0]
 	add x3, x3, #1
 	str x3, [x0, #0]
@@ -22056,23 +22072,23 @@ vg_dsa_parameter_search:
 	movz x7, #0, lsl #0
 	movz x4, #1, lsl #0
 	csel x5, x4, x7, hs
-	cbz x5, 288f
+	cbz x5, 285f
 	movz x3, #2, lsl #0
 	str x3, [x0, #16]
-	b 289f
-288:
+	b 286f
+285:
 	movz x3, #3, lsl #0
 	str x3, [x0, #16]
-289:
-287:
+286:
+284:
 	ldr x3, [x0, #16]
 	sub x3, x3, #3
 	cbz x3, 218b
 	ldr x3, [sp, #152]
 	sub x3, x3, #1
-	cbz x3, 290f
-	b 291f
-290:
+	cbz x3, 287f
+	b 288f
+287:
 	ldr x3, [sp, #112]
 	ldr x4, [sp, #128]
 	ldr x6, [sp, #120]
@@ -22095,12 +22111,12 @@ vg_dsa_parameter_search:
 	lsl x4, x4, #2
 	sub x3, x0, x4
 	sub x4, x3, #3
-	cbz x4, 292f
+	cbz x4, 289f
 	add x3, x3, x3
 	sub x3, x3, #1
 	str x3, [sp, #152]
-	b 293f
-292:
+	b 290f
+289:
 	ldr x4, [sp, #104]
 	movz x5, #49152, lsl #0
 	subs x4, x4, x5
@@ -22108,18 +22124,18 @@ vg_dsa_parameter_search:
 	movz x5, #0, lsl #0
 	csel x3, x4, x5, hs
 	str x3, [sp, #152]
-293:
-291:
+290:
+288:
 217:
 	ldr x0, [sp, #152]
 	sub x0, x0, #3
-	cbz x0, 294f
-	b 295f
-294:
+	cbz x0, 291f
+	b 292f
+291:
 	ldr x3, [sp, #464]
 	sub x3, x3, #1
 	str x3, [sp, #464]
-295:
+292:
 	b 28f
 27:
 	movz x3, #0, lsl #0
@@ -22136,9 +22152,9 @@ vg_dsa_parameter_search:
 	ldr x14, [sp, #456]
 	ldr x15, [sp, #448]
 	ldr x3, [sp, #152]
-	cbz x3, 296f
+	cbz x3, 293f
 	sub x3, x3, #1
-	cbz x3, 298f
+	cbz x3, 295f
 	movz x11, #0, lsl #0
 	movz x10, #0, lsl #0
 	ldr x12, [sp, #472]
@@ -22147,8 +22163,8 @@ vg_dsa_parameter_search:
 	str x12, [x15, #0]
 	movz x9, #3, lsl #0
 	str x9, [sp, #472]
-	b 299f
-298:
+	b 296f
+295:
 	movz x11, #0, lsl #0
 	movz x10, #0, lsl #0
 	ldr x12, [sp, #128]
@@ -22157,9 +22173,9 @@ vg_dsa_parameter_search:
 	str x12, [x15, #0]
 	movz x9, #1, lsl #0
 	str x9, [sp, #472]
-299:
-	b 297f
 296:
+	b 294f
+293:
 	ldr x10, [sp, #120]
 	ldr x9, [sp, #472]
 	sub x10, x10, x9
@@ -22170,7 +22186,7 @@ vg_dsa_parameter_search:
 	movz x12, #0, lsl #0
 	movz x13, #1, lsl #0
 	csel x12, x13, x12, hs
-	cbz x12, 2100f
+	cbz x12, 297f
 	movz x11, #0, lsl #0
 	movz x10, #0, lsl #0
 	ldr x12, [sp, #472]
@@ -22179,8 +22195,8 @@ vg_dsa_parameter_search:
 	str x12, [x15, #0]
 	movz x9, #3, lsl #0
 	str x9, [sp, #472]
-	b 2101f
-2100:
+	b 298f
+297:
 	lsl x12, x9, #8
 	subs x13, x10, x12
 	csel x10, x10, x12, hs
@@ -22194,11 +22210,11 @@ vg_dsa_parameter_search:
 	str x12, [x15, #0]
 	movz x9, #0, lsl #0
 	str x9, [sp, #472]
-2101:
-297:
+298:
+294:
 	ldr x3, [sp, #152]
 	sub x3, x3, #1
-	cbz x3, 2102f
+	cbz x3, 299f
 	ldr x3, [sp, #48]
 	str x3, [sp, #152]
 	ldr x3, [sp, #56]
@@ -22206,43 +22222,43 @@ vg_dsa_parameter_search:
 	ldr x11, [sp, #152]
 	ldr x12, [sp, #168]
 	movz x13, #0, lsl #0
-2104:
+2101:
 	strb w13, [x11, #0]
 	add x11, x11, #1
 	sub x12, x12, #1
-	cbnz x12, 2104b
+	cbnz x12, 2101b
 	movz x0, #0, lsl #0
-	b 2103f
-2102:
+	b 2100f
+299:
 	ldr x12, [sp, #40]
 	movz x3, #27008, lsl #0
 	add x12, x12, x3
 	ldr x2, [sp, #48]
 	ldr x9, [sp, #56]
-	cbnz x9, 2105f
-	b 2106f
-2105:
-2107:
+	cbnz x9, 2102f
+	b 2103f
+2102:
+2104:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2107b
-2106:
-	movz x0, #1, lsl #0
+	cbnz x9, 2104b
 2103:
+	movz x0, #1, lsl #0
+2100:
 	ldr x0, [sp, #472]
 	b 23f
 22:
 	movz x3, #32, lsl #0
 	str x3, [sp, #144]
 	str x3, [sp, #208]
-2108:
+2105:
 	ldr x0, [sp, #128]
 	ldr x3, [sp, #464]
 	str x0, [sp, #472]
-	cbz x3, 2109f
+	cbz x3, 2106f
 	ldr x3, [sp, #120]
 	sub x3, x3, x0
 	movz x4, #32, lsl #0
@@ -22250,7 +22266,7 @@ vg_dsa_parameter_search:
 	movz x4, #1, lsl #0
 	movz x5, #0, lsl #0
 	csel x3, x5, x4, hs
-	cbnz x3, 2111f
+	cbnz x3, 2108f
 	ldr x3, [sp, #112]
 	str x3, [sp, #88]
 	add x3, x3, x0
@@ -22270,7 +22286,7 @@ vg_dsa_parameter_search:
 	str x3, [sp, #208]
 	ldr x0, [sp, #208]
 	sub x0, x0, #20
-	cbz x0, 2113f
+	cbz x0, 2110f
 	ldr x0, [sp, #96]
 	add x0, x0, #3072
 	bl {vg_sha256_init}
@@ -22290,8 +22306,8 @@ vg_dsa_parameter_search:
 	ldr x3, [sp, #96]
 	add x3, x3, #3520
 	bl {vg_sha256_finalize_scratch}
-	b 2114f
-2113:
+	b 2111f
+2110:
 	ldr x0, [sp, #96]
 	add x0, x0, #3072
 	bl {vg_sha1_init}
@@ -22311,24 +22327,24 @@ vg_dsa_parameter_search:
 	ldr x3, [sp, #96]
 	add x3, x3, #3520
 	bl {vg_sha1_finalize_scratch}
-2114:
+2111:
 	ldr x2, [sp, #0]
 	ldr x12, [sp, #96]
 	add x12, x12, #3328
 	ldr x9, [sp, #208]
 	add x13, x2, #0
 	add x14, x9, #0
-	cbnz x9, 2115f
-	b 2116f
-2115:
-2117:
+	cbnz x9, 2112f
+	b 2113f
+2112:
+2114:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2117b
-2116:
+	cbnz x9, 2114b
+2113:
 	ldrb w0, [x13, #0]
 	movz x4, #128, lsl #0
 	orr x0, x0, x4
@@ -22349,22 +22365,22 @@ vg_dsa_parameter_search:
 	add x4, sp, #152
 	bl {vg_dsa_probable_prime_256}
 	add w0, w0, #0
-	cbz x0, 2118f
+	cbz x0, 2115f
 	ldr x3, [sp, #152]
 	ldr x4, [sp, #128]
 	add x3, x3, x4
 	str x3, [sp, #128]
-	b 2119f
-2118:
-2119:
+	b 2116f
+2115:
+2116:
 	lsr x3, x0, #1
 	add x0, x0, x3
 	str x0, [sp, #152]
 	ldr x3, [sp, #152]
 	sub x3, x3, #1
-	cbz x3, 2120f
-	b 2121f
-2120:
+	cbz x3, 2117f
+	b 2118f
+2117:
 	ldr x0, [sp, #40]
 	movz x3, #27840, lsl #0
 	add x0, x0, x3
@@ -22372,7 +22388,7 @@ vg_dsa_parameter_search:
 	str x3, [x0, #0]
 	movz x3, #1, lsl #0
 	str x3, [x0, #8]
-2122:
+2119:
 	ldr x3, [x0, #8]
 	ldr x4, [sp, #40]
 	movz x5, #25024, lsl #0
@@ -22537,17 +22553,17 @@ vg_dsa_parameter_search:
 	ldr x2, [sp, #32]
 	add x2, x2, #224
 	movz x9, #32, lsl #0
-	cbnz x9, 2123f
-	b 2124f
-2123:
-2125:
+	cbnz x9, 2120f
+	b 2121f
+2120:
+2122:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2125b
-2124:
+	cbnz x9, 2122b
+2121:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -22704,17 +22720,17 @@ vg_dsa_parameter_search:
 	ldr x2, [sp, #32]
 	add x2, x2, #192
 	movz x9, #32, lsl #0
-	cbnz x9, 2126f
-	b 2127f
-2126:
-2128:
+	cbnz x9, 2123f
+	b 2124f
+2123:
+2125:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2128b
-2127:
+	cbnz x9, 2125b
+2124:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -22871,17 +22887,17 @@ vg_dsa_parameter_search:
 	ldr x2, [sp, #32]
 	add x2, x2, #160
 	movz x9, #32, lsl #0
-	cbnz x9, 2129f
-	b 2130f
-2129:
-2131:
+	cbnz x9, 2126f
+	b 2127f
+2126:
+2128:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2131b
-2130:
+	cbnz x9, 2128b
+2127:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -23038,17 +23054,17 @@ vg_dsa_parameter_search:
 	ldr x2, [sp, #32]
 	add x2, x2, #128
 	movz x9, #32, lsl #0
-	cbnz x9, 2132f
-	b 2133f
-2132:
-2134:
+	cbnz x9, 2129f
+	b 2130f
+2129:
+2131:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2134b
-2133:
+	cbnz x9, 2131b
+2130:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -23205,17 +23221,17 @@ vg_dsa_parameter_search:
 	ldr x2, [sp, #32]
 	add x2, x2, #96
 	movz x9, #32, lsl #0
-	cbnz x9, 2135f
-	b 2136f
-2135:
-2137:
+	cbnz x9, 2132f
+	b 2133f
+2132:
+2134:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2137b
-2136:
+	cbnz x9, 2134b
+2133:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -23372,17 +23388,17 @@ vg_dsa_parameter_search:
 	ldr x2, [sp, #32]
 	add x2, x2, #64
 	movz x9, #32, lsl #0
-	cbnz x9, 2138f
-	b 2139f
-2138:
-2140:
+	cbnz x9, 2135f
+	b 2136f
+2135:
+2137:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2140b
-2139:
+	cbnz x9, 2137b
+2136:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -23539,17 +23555,17 @@ vg_dsa_parameter_search:
 	ldr x2, [sp, #32]
 	add x2, x2, #32
 	movz x9, #32, lsl #0
-	cbnz x9, 2141f
-	b 2142f
-2141:
-2143:
+	cbnz x9, 2138f
+	b 2139f
+2138:
+2140:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2143b
-2142:
+	cbnz x9, 2140b
+2139:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -23706,6 +23722,23 @@ vg_dsa_parameter_search:
 	ldr x2, [sp, #32]
 	add x2, x2, #0
 	movz x9, #32, lsl #0
+	cbnz x9, 2141f
+	b 2142f
+2141:
+2143:
+	ldrb w0, [x12, #0]
+	strb w0, [x2, #0]
+	add x12, x12, #1
+	add x2, x2, #1
+	sub x9, x9, #1
+	cbnz x9, 2143b
+2142:
+	ldr x2, [sp, #0]
+	ldr x12, [sp, #32]
+	add x12, x12, #0
+	movz x9, #256, lsl #0
+	add x13, x2, #0
+	add x14, x9, #0
 	cbnz x9, 2144f
 	b 2145f
 2144:
@@ -23717,23 +23750,6 @@ vg_dsa_parameter_search:
 	sub x9, x9, #1
 	cbnz x9, 2146b
 2145:
-	ldr x2, [sp, #0]
-	ldr x12, [sp, #32]
-	add x12, x12, #0
-	movz x9, #256, lsl #0
-	add x13, x2, #0
-	add x14, x9, #0
-	cbnz x9, 2147f
-	b 2148f
-2147:
-2149:
-	ldrb w0, [x12, #0]
-	strb w0, [x2, #0]
-	add x12, x12, #1
-	add x2, x2, #1
-	sub x9, x9, #1
-	cbnz x9, 2149b
-2148:
 	ldrb w0, [x13, #0]
 	movz x4, #128, lsl #0
 	orr x0, x0, x4
@@ -23801,11 +23817,11 @@ vg_dsa_parameter_search:
 	movz x7, #0, lsl #0
 	add x16, x8, #0
 	add x14, x12, #2
-2150:
+2147:
 	str x7, [x16, #0]
 	add x16, x16, #8
 	sub x14, x14, #1
-	cbnz x14, 2150b
+	cbnz x14, 2147b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x0, #256
@@ -23813,21 +23829,21 @@ vg_dsa_parameter_search:
 	ldr x2, [x0, #136]
 	movz x3, #0, lsl #0
 	movz x6, #7, lsl #0
-2151:
+2148:
 	sub x2, x2, #1
 	lsl x3, x3, #8
 	ldrb w4, [x1, #0]
 	add x3, x3, x4
 	add x1, x1, #1
 	and x5, x2, x6
-	cbz x5, 2152f
-	b 2153f
-2152:
+	cbz x5, 2149f
+	b 2150f
+2149:
 	add x5, x8, x2
 	str x3, [x5, #0]
 	movz x3, #0, lsl #0
-2153:
-	cbnz x2, 2151b
+2150:
+	cbnz x2, 2148b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x11, #0
@@ -23837,11 +23853,11 @@ vg_dsa_parameter_search:
 	movz x7, #0, lsl #0
 	add x16, x8, #0
 	add x14, x12, #2
-2154:
+2151:
 	str x7, [x16, #0]
 	add x16, x16, #8
 	sub x14, x14, #1
-	cbnz x14, 2154b
+	cbnz x14, 2151b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x11, #0
@@ -23852,21 +23868,21 @@ vg_dsa_parameter_search:
 	ldr x2, [x0, #152]
 	movz x3, #0, lsl #0
 	movz x6, #7, lsl #0
-2155:
+2152:
 	sub x2, x2, #1
 	lsl x3, x3, #8
 	ldrb w4, [x1, #0]
 	add x3, x3, x4
 	add x1, x1, #1
 	and x5, x2, x6
-	cbz x5, 2156f
-	b 2157f
-2156:
+	cbz x5, 2153f
+	b 2154f
+2153:
 	add x5, x8, x2
 	str x3, [x5, #0]
 	movz x3, #0, lsl #0
-2157:
-	cbnz x2, 2155b
+2154:
+	cbnz x2, 2152b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	movz x7, #0, lsl #0
@@ -23876,13 +23892,13 @@ vg_dsa_parameter_search:
 	add x16, x16, x16
 	add x16, x16, x0
 	add x16, x16, #256
-2158:
+2155:
 	ldr x3, [x16, #0]
 	adcs x3, x3, x3
 	str x3, [x16, #0]
 	add x16, x16, #8
 	sub x14, x14, #1
-	cbnz x14, 2158b
+	cbnz x14, 2155b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x16, x0, #256
@@ -23892,13 +23908,13 @@ vg_dsa_parameter_search:
 	add x17, x17, x0
 	add x17, x17, #256
 	add x14, x12, #0
-2159:
+2156:
 	ldr x3, [x16, #0]
 	str x3, [x17, #0]
 	add x16, x16, #8
 	add x17, x17, #8
 	sub x14, x14, #1
-	cbnz x14, 2159b
+	cbnz x14, 2156b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x11, #0
@@ -23907,38 +23923,15 @@ vg_dsa_parameter_search:
 	movz x7, #0, lsl #0
 	add x16, x8, #0
 	add x14, x12, #2
-2160:
+2157:
 	str x7, [x16, #0]
 	add x16, x16, #8
 	sub x14, x14, #1
-	cbnz x14, 2160b
-	lsl x6, x12, #6
-2161:
-	movz x7, #0, lsl #0
-	add x14, x12, #0
-	adds x3, x7, x7
-	add x16, x0, #256
-2162:
-	ldr x3, [x16, #0]
-	adcs x3, x3, x3
-	str x3, [x16, #0]
-	add x16, x16, #8
-	sub x14, x14, #1
-	cbnz x14, 2162b
-	add x16, x11, #0
-	add x16, x16, x0
-	add x16, x16, #256
-	add x14, x12, #1
-2163:
-	ldr x3, [x16, #0]
-	adcs x3, x3, x3
-	str x3, [x16, #0]
-	add x16, x16, #8
-	sub x14, x14, #1
-	cbnz x14, 2163b
-	movz x7, #0, lsl #0
-	add x14, x12, #0
-	subs x3, x7, x7
+	cbnz x14, 2157b
+	add x13, x0, #256
+	lsl x3, x12, #3
+	add x13, x13, x3
+	add x6, x12, #0
 	add x16, x11, #0
 	add x16, x16, x0
 	add x16, x16, #256
@@ -23946,54 +23939,81 @@ vg_dsa_parameter_search:
 	add x17, x17, x17
 	add x17, x17, x0
 	add x17, x17, #256
-	add x13, x11, #0
-	add x13, x13, x13
-	add x13, x13, x11
-	add x13, x13, x0
-	add x13, x13, #256
-2164:
+	add x8, x11, #0
+	add x8, x8, x8
+	add x8, x8, x11
+	add x8, x8, x0
+	add x8, x8, #256
+2158:
+	sub x13, x13, #8
+	ldr x14, [x13, #0]
+	movz x15, #0, lsl #0
+	movz x9, #64, lsl #0
+	adds x14, x14, x14
+2159:
+	ldr x3, [x16, #0]
+	adcs x3, x3, x3
+	str x3, [x16, #0]
+	ldr x3, [x16, #8]
+	adcs x3, x3, x3
+	str x3, [x16, #8]
+	ldr x3, [x16, #16]
+	adcs x3, x3, x3
+	str x3, [x16, #16]
+	ldr x3, [x16, #24]
+	adcs x3, x3, x3
+	str x3, [x16, #24]
+	ldr x3, [x16, #32]
+	adcs x3, x3, x3
+	str x3, [x16, #32]
+	subs x3, x7, x7
 	ldr x3, [x16, #0]
 	ldr x4, [x17, #0]
 	sbcs x3, x3, x4
-	str x3, [x13, #0]
-	add x16, x16, #8
-	add x17, x17, #8
-	add x13, x13, #8
-	sub x14, x14, #1
-	cbnz x14, 2164b
+	str x3, [x8, #0]
+	ldr x3, [x16, #8]
+	ldr x4, [x17, #8]
+	sbcs x3, x3, x4
+	str x3, [x8, #8]
+	ldr x3, [x16, #16]
+	ldr x4, [x17, #16]
+	sbcs x3, x3, x4
+	str x3, [x8, #16]
+	ldr x3, [x16, #24]
+	ldr x4, [x17, #24]
+	sbcs x3, x3, x4
+	str x3, [x8, #24]
+	ldr x3, [x16, #32]
+	ldr x4, [x17, #32]
+	sbcs x3, x3, x4
+	str x3, [x8, #32]
 	ldr x3, [x16, #0]
-	sbcs x3, x3, x7
-	str x3, [x13, #0]
-	sub x4, x7, #1
-	csel x15, x4, x7, hs
-	add x16, x11, #0
-	add x16, x16, x16
-	add x16, x16, x11
-	add x16, x16, x0
-	add x16, x16, #256
-	add x17, x11, #0
-	add x17, x17, x0
-	add x17, x17, #256
-	add x14, x12, #1
-	movz x3, #1, lsl #0
-	subs x3, x15, x3
-2165:
-	ldr x3, [x16, #0]
-	ldr x4, [x17, #0]
-	csel x4, x3, x4, hs
-	str x4, [x17, #0]
-	add x16, x16, #8
-	add x17, x17, #8
-	sub x14, x14, #1
-	cbnz x14, 2165b
-	add x16, x0, #256
-	ldr x3, [x16, #0]
-	movz x4, #1, lsl #0
-	and x4, x4, x15
-	orr x3, x3, x4
+	ldr x4, [x8, #0]
+	csel x3, x4, x3, hs
 	str x3, [x16, #0]
+	ldr x3, [x16, #8]
+	ldr x4, [x8, #8]
+	csel x3, x4, x3, hs
+	str x3, [x16, #8]
+	ldr x3, [x16, #16]
+	ldr x4, [x8, #16]
+	csel x3, x4, x3, hs
+	str x3, [x16, #16]
+	ldr x3, [x16, #24]
+	ldr x4, [x8, #24]
+	csel x3, x4, x3, hs
+	str x3, [x16, #24]
+	ldr x3, [x16, #32]
+	ldr x4, [x8, #32]
+	csel x3, x4, x3, hs
+	str x3, [x16, #32]
+	adcs x15, x15, x15
+	adds x14, x14, x14
+	sub x9, x9, #1
+	cbnz x9, 2159b
+	str x15, [x13, #0]
 	sub x6, x6, #1
-	cbnz x6, 2161b
+	cbnz x6, 2158b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	movz x7, #0, lsl #0
@@ -24014,7 +24034,7 @@ vg_dsa_parameter_search:
 	add x8, x8, x11
 	add x8, x8, x0
 	add x8, x8, #256
-2166:
+2160:
 	ldr x3, [x16, #0]
 	ldr x4, [x17, #0]
 	and x4, x4, x15
@@ -24024,7 +24044,7 @@ vg_dsa_parameter_search:
 	add x17, x17, #8
 	add x8, x8, #8
 	sub x14, x14, #1
-	cbnz x14, 2166b
+	cbnz x14, 2160b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x16, x11, #0
@@ -24042,13 +24062,13 @@ vg_dsa_parameter_search:
 	add x14, x12, #0
 	adds x3, x7, x7
 	add x16, x0, #256
-2167:
+2161:
 	ldr x3, [x16, #0]
 	adcs x3, x3, x3
 	str x3, [x16, #0]
 	add x16, x16, #8
 	sub x14, x14, #1
-	cbnz x14, 2167b
+	cbnz x14, 2161b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x11, #0
@@ -24063,21 +24083,21 @@ vg_dsa_parameter_search:
 	ldr x15, [x0, #176]
 	movz x2, #0, lsl #0
 	movz x6, #7, lsl #0
-2168:
+2162:
 	and x5, x2, x6
-	cbz x5, 2169f
-	b 2170f
-2169:
+	cbz x5, 2163f
+	b 2164f
+2163:
 	add x5, x8, x2
 	ldr x3, [x5, #0]
 	and x3, x3, x15
-2170:
+2164:
 	sub x1, x1, #1
 	strb w3, [x1, #0]
 	lsr x3, x3, #8
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2168b
+	cbnz x9, 2162b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x0, #256
@@ -24087,25 +24107,25 @@ vg_dsa_parameter_search:
 	ldr x15, [x0, #176]
 	movz x2, #0, lsl #0
 	movz x6, #7, lsl #0
-2171:
+2165:
 	and x5, x2, x6
-	cbz x5, 2172f
-	b 2173f
-2172:
+	cbz x5, 2166f
+	b 2167f
+2166:
 	add x5, x8, x2
 	ldr x3, [x5, #0]
 	and x3, x3, x15
-2173:
+2167:
 	sub x1, x1, #1
 	strb w3, [x1, #0]
 	lsr x3, x3, #8
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2171b
+	cbnz x9, 2165b
 	ldr x1, [x0, #160]
 	ldrb w3, [x1, #0]
 	lsr x3, x3, #7
-	cbz x3, 2174f
+	cbz x3, 2168f
 	ldr x0, [sp, #40]
 	movz x1, #5120, lsl #0
 	ldr x2, [sp, #112]
@@ -24116,22 +24136,22 @@ vg_dsa_parameter_search:
 	add x4, sp, #152
 	bl {vg_dsa_probable_prime_2048}
 	add w0, w0, #0
-	cbz x0, 2176f
+	cbz x0, 2170f
 	ldr x3, [sp, #152]
 	ldr x4, [sp, #128]
 	add x3, x3, x4
 	str x3, [sp, #128]
-	b 2177f
-2176:
-2177:
+	b 2171f
+2170:
+2171:
 	lsr x3, x0, #1
 	add x0, x0, x3
 	str x0, [sp, #152]
-	b 2175f
-2174:
+	b 2169f
+2168:
 	movz x3, #3, lsl #0
 	str x3, [sp, #152]
-2175:
+2169:
 	ldr x0, [sp, #40]
 	movz x3, #27840, lsl #0
 	add x0, x0, x3
@@ -24139,9 +24159,9 @@ vg_dsa_parameter_search:
 	str x3, [x0, #16]
 	ldr x3, [x0, #16]
 	sub x3, x3, #3
-	cbz x3, 2178f
-	b 2179f
-2178:
+	cbz x3, 2172f
+	b 2173f
+2172:
 	ldr x3, [x0, #0]
 	add x3, x3, #1
 	str x3, [x0, #0]
@@ -24153,23 +24173,23 @@ vg_dsa_parameter_search:
 	movz x7, #0, lsl #0
 	movz x4, #1, lsl #0
 	csel x5, x4, x7, hs
-	cbz x5, 2180f
+	cbz x5, 2174f
 	movz x3, #2, lsl #0
 	str x3, [x0, #16]
-	b 2181f
-2180:
+	b 2175f
+2174:
 	movz x3, #3, lsl #0
 	str x3, [x0, #16]
-2181:
-2179:
+2175:
+2173:
 	ldr x3, [x0, #16]
 	sub x3, x3, #3
-	cbz x3, 2122b
+	cbz x3, 2119b
 	ldr x3, [sp, #152]
 	sub x3, x3, #1
-	cbz x3, 2182f
-	b 2183f
-2182:
+	cbz x3, 2176f
+	b 2177f
+2176:
 	ldr x3, [sp, #112]
 	ldr x4, [sp, #128]
 	ldr x6, [sp, #120]
@@ -24192,12 +24212,12 @@ vg_dsa_parameter_search:
 	lsl x4, x4, #2
 	sub x3, x0, x4
 	sub x4, x3, #3
-	cbz x4, 2184f
+	cbz x4, 2178f
 	add x3, x3, x3
 	sub x3, x3, #1
 	str x3, [sp, #152]
-	b 2185f
-2184:
+	b 2179f
+2178:
 	ldr x4, [sp, #104]
 	movz x5, #32768, lsl #0
 	subs x4, x4, x5
@@ -24205,37 +24225,37 @@ vg_dsa_parameter_search:
 	movz x5, #0, lsl #0
 	csel x3, x4, x5, hs
 	str x3, [sp, #152]
-2185:
-2183:
-2121:
+2179:
+2177:
+2118:
 	ldr x0, [sp, #152]
 	sub x0, x0, #3
-	cbz x0, 2186f
-	b 2187f
-2186:
+	cbz x0, 2180f
+	b 2181f
+2180:
 	ldr x3, [sp, #464]
 	sub x3, x3, #1
 	str x3, [sp, #464]
-2187:
-	b 2112f
-2111:
+2181:
+	b 2109f
+2108:
 	movz x3, #0, lsl #0
 	str x3, [sp, #152]
-2112:
-	b 2110f
 2109:
+	b 2107f
+2106:
 	movz x3, #2, lsl #0
 	str x3, [sp, #152]
-2110:
+2107:
 	ldr x0, [sp, #152]
 	sub x0, x0, #3
-	cbz x0, 2108b
+	cbz x0, 2105b
 	ldr x14, [sp, #456]
 	ldr x15, [sp, #448]
 	ldr x3, [sp, #152]
-	cbz x3, 2188f
+	cbz x3, 2182f
 	sub x3, x3, #1
-	cbz x3, 2190f
+	cbz x3, 2184f
 	movz x11, #0, lsl #0
 	movz x10, #0, lsl #0
 	ldr x12, [sp, #472]
@@ -24244,8 +24264,8 @@ vg_dsa_parameter_search:
 	str x12, [x15, #0]
 	movz x9, #3, lsl #0
 	str x9, [sp, #472]
-	b 2191f
-2190:
+	b 2185f
+2184:
 	movz x11, #0, lsl #0
 	movz x10, #0, lsl #0
 	ldr x12, [sp, #128]
@@ -24254,9 +24274,9 @@ vg_dsa_parameter_search:
 	str x12, [x15, #0]
 	movz x9, #1, lsl #0
 	str x9, [sp, #472]
-2191:
-	b 2189f
-2188:
+2185:
+	b 2183f
+2182:
 	ldr x10, [sp, #120]
 	ldr x9, [sp, #472]
 	sub x10, x10, x9
@@ -24267,7 +24287,7 @@ vg_dsa_parameter_search:
 	movz x12, #0, lsl #0
 	movz x13, #1, lsl #0
 	csel x12, x13, x12, hs
-	cbz x12, 2192f
+	cbz x12, 2186f
 	movz x11, #0, lsl #0
 	movz x10, #0, lsl #0
 	ldr x12, [sp, #472]
@@ -24276,8 +24296,8 @@ vg_dsa_parameter_search:
 	str x12, [x15, #0]
 	movz x9, #3, lsl #0
 	str x9, [sp, #472]
-	b 2193f
-2192:
+	b 2187f
+2186:
 	lsl x12, x9, #8
 	subs x13, x10, x12
 	csel x10, x10, x12, hs
@@ -24291,11 +24311,11 @@ vg_dsa_parameter_search:
 	str x12, [x15, #0]
 	movz x9, #0, lsl #0
 	str x9, [sp, #472]
-2193:
-2189:
+2187:
+2183:
 	ldr x3, [sp, #152]
 	sub x3, x3, #1
-	cbz x3, 2194f
+	cbz x3, 2188f
 	ldr x3, [sp, #48]
 	str x3, [sp, #152]
 	ldr x3, [sp, #56]
@@ -24303,32 +24323,32 @@ vg_dsa_parameter_search:
 	ldr x11, [sp, #152]
 	ldr x12, [sp, #168]
 	movz x13, #0, lsl #0
-2196:
+2190:
 	strb w13, [x11, #0]
 	add x11, x11, #1
 	sub x12, x12, #1
-	cbnz x12, 2196b
+	cbnz x12, 2190b
 	movz x0, #0, lsl #0
-	b 2195f
-2194:
+	b 2189f
+2188:
 	ldr x12, [sp, #40]
 	movz x3, #27008, lsl #0
 	add x12, x12, x3
 	ldr x2, [sp, #48]
 	ldr x9, [sp, #56]
-	cbnz x9, 2197f
-	b 2198f
-2197:
-2199:
+	cbnz x9, 2191f
+	b 2192f
+2191:
+2193:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2199b
-2198:
+	cbnz x9, 2193b
+2192:
 	movz x0, #1, lsl #0
-2195:
+2189:
 	ldr x0, [sp, #472]
 23:
 	b 21f
@@ -24336,11 +24356,11 @@ vg_dsa_parameter_search:
 	movz x3, #20, lsl #0
 	str x3, [sp, #144]
 	str x3, [sp, #208]
-2200:
+2194:
 	ldr x0, [sp, #128]
 	ldr x3, [sp, #464]
 	str x0, [sp, #472]
-	cbz x3, 2201f
+	cbz x3, 2195f
 	ldr x3, [sp, #120]
 	sub x3, x3, x0
 	movz x4, #20, lsl #0
@@ -24348,7 +24368,7 @@ vg_dsa_parameter_search:
 	movz x4, #1, lsl #0
 	movz x5, #0, lsl #0
 	csel x3, x5, x4, hs
-	cbnz x3, 2203f
+	cbnz x3, 2197f
 	ldr x3, [sp, #112]
 	str x3, [sp, #88]
 	add x3, x3, x0
@@ -24368,7 +24388,7 @@ vg_dsa_parameter_search:
 	str x3, [sp, #208]
 	ldr x0, [sp, #208]
 	sub x0, x0, #20
-	cbz x0, 2205f
+	cbz x0, 2199f
 	ldr x0, [sp, #96]
 	add x0, x0, #3072
 	bl {vg_sha256_init}
@@ -24388,8 +24408,8 @@ vg_dsa_parameter_search:
 	ldr x3, [sp, #96]
 	add x3, x3, #3520
 	bl {vg_sha256_finalize_scratch}
-	b 2206f
-2205:
+	b 2200f
+2199:
 	ldr x0, [sp, #96]
 	add x0, x0, #3072
 	bl {vg_sha1_init}
@@ -24409,24 +24429,24 @@ vg_dsa_parameter_search:
 	ldr x3, [sp, #96]
 	add x3, x3, #3520
 	bl {vg_sha1_finalize_scratch}
-2206:
+2200:
 	ldr x2, [sp, #0]
 	ldr x12, [sp, #96]
 	add x12, x12, #3328
 	ldr x9, [sp, #208]
 	add x13, x2, #0
 	add x14, x9, #0
-	cbnz x9, 2207f
-	b 2208f
-2207:
-2209:
+	cbnz x9, 2201f
+	b 2202f
+2201:
+2203:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2209b
-2208:
+	cbnz x9, 2203b
+2202:
 	ldrb w0, [x13, #0]
 	movz x4, #128, lsl #0
 	orr x0, x0, x4
@@ -24447,22 +24467,22 @@ vg_dsa_parameter_search:
 	add x4, sp, #152
 	bl {vg_dsa_probable_prime_160}
 	add w0, w0, #0
-	cbz x0, 2210f
+	cbz x0, 2204f
 	ldr x3, [sp, #152]
 	ldr x4, [sp, #128]
 	add x3, x3, x4
 	str x3, [sp, #128]
-	b 2211f
-2210:
-2211:
+	b 2205f
+2204:
+2205:
 	lsr x3, x0, #1
 	add x0, x0, x3
 	str x0, [sp, #152]
 	ldr x3, [sp, #152]
 	sub x3, x3, #1
-	cbz x3, 2212f
-	b 2213f
-2212:
+	cbz x3, 2206f
+	b 2207f
+2206:
 	ldr x0, [sp, #40]
 	movz x3, #27840, lsl #0
 	add x0, x0, x3
@@ -24470,7 +24490,7 @@ vg_dsa_parameter_search:
 	str x3, [x0, #0]
 	movz x3, #1, lsl #0
 	str x3, [x0, #8]
-2214:
+2208:
 	ldr x3, [x0, #8]
 	ldr x4, [sp, #40]
 	movz x5, #25024, lsl #0
@@ -24587,17 +24607,17 @@ vg_dsa_parameter_search:
 	ldr x2, [sp, #32]
 	add x2, x2, #120
 	movz x9, #20, lsl #0
-	cbnz x9, 2215f
-	b 2216f
-2215:
-2217:
+	cbnz x9, 2209f
+	b 2210f
+2209:
+2211:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2217b
-2216:
+	cbnz x9, 2211b
+2210:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -24706,17 +24726,17 @@ vg_dsa_parameter_search:
 	ldr x2, [sp, #32]
 	add x2, x2, #100
 	movz x9, #20, lsl #0
-	cbnz x9, 2218f
-	b 2219f
-2218:
-2220:
+	cbnz x9, 2212f
+	b 2213f
+2212:
+2214:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2220b
-2219:
+	cbnz x9, 2214b
+2213:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -24825,17 +24845,17 @@ vg_dsa_parameter_search:
 	ldr x2, [sp, #32]
 	add x2, x2, #80
 	movz x9, #20, lsl #0
-	cbnz x9, 2221f
-	b 2222f
-2221:
-2223:
+	cbnz x9, 2215f
+	b 2216f
+2215:
+2217:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2223b
-2222:
+	cbnz x9, 2217b
+2216:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -24944,17 +24964,17 @@ vg_dsa_parameter_search:
 	ldr x2, [sp, #32]
 	add x2, x2, #60
 	movz x9, #20, lsl #0
-	cbnz x9, 2224f
-	b 2225f
-2224:
-2226:
+	cbnz x9, 2218f
+	b 2219f
+2218:
+2220:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2226b
-2225:
+	cbnz x9, 2220b
+2219:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -25063,17 +25083,17 @@ vg_dsa_parameter_search:
 	ldr x2, [sp, #32]
 	add x2, x2, #40
 	movz x9, #20, lsl #0
-	cbnz x9, 2227f
-	b 2228f
-2227:
-2229:
+	cbnz x9, 2221f
+	b 2222f
+2221:
+2223:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2229b
-2228:
+	cbnz x9, 2223b
+2222:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -25182,17 +25202,17 @@ vg_dsa_parameter_search:
 	ldr x2, [sp, #32]
 	add x2, x2, #20
 	movz x9, #20, lsl #0
-	cbnz x9, 2230f
-	b 2231f
-2230:
-2232:
+	cbnz x9, 2224f
+	b 2225f
+2224:
+2226:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2232b
-2231:
+	cbnz x9, 2226b
+2225:
 	ldr x1, [sp, #8]
 	ldr x2, [sp, #24]
 	ldr x0, [sp, #16]
@@ -25301,34 +25321,34 @@ vg_dsa_parameter_search:
 	ldr x2, [sp, #32]
 	add x2, x2, #0
 	movz x9, #20, lsl #0
-	cbnz x9, 2233f
-	b 2234f
-2233:
-2235:
+	cbnz x9, 2227f
+	b 2228f
+2227:
+2229:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2235b
-2234:
+	cbnz x9, 2229b
+2228:
 	ldr x2, [sp, #0]
 	ldr x12, [sp, #32]
 	add x12, x12, #12
 	movz x9, #128, lsl #0
 	add x13, x2, #0
 	add x14, x9, #0
-	cbnz x9, 2236f
-	b 2237f
-2236:
-2238:
+	cbnz x9, 2230f
+	b 2231f
+2230:
+2232:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2238b
-2237:
+	cbnz x9, 2232b
+2231:
 	ldrb w0, [x13, #0]
 	movz x4, #128, lsl #0
 	orr x0, x0, x4
@@ -25396,11 +25416,11 @@ vg_dsa_parameter_search:
 	movz x7, #0, lsl #0
 	add x16, x8, #0
 	add x14, x12, #2
-2239:
+2233:
 	str x7, [x16, #0]
 	add x16, x16, #8
 	sub x14, x14, #1
-	cbnz x14, 2239b
+	cbnz x14, 2233b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x0, #256
@@ -25408,21 +25428,21 @@ vg_dsa_parameter_search:
 	ldr x2, [x0, #136]
 	movz x3, #0, lsl #0
 	movz x6, #7, lsl #0
-2240:
+2234:
 	sub x2, x2, #1
 	lsl x3, x3, #8
 	ldrb w4, [x1, #0]
 	add x3, x3, x4
 	add x1, x1, #1
 	and x5, x2, x6
-	cbz x5, 2241f
-	b 2242f
-2241:
+	cbz x5, 2235f
+	b 2236f
+2235:
 	add x5, x8, x2
 	str x3, [x5, #0]
 	movz x3, #0, lsl #0
-2242:
-	cbnz x2, 2240b
+2236:
+	cbnz x2, 2234b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x11, #0
@@ -25432,11 +25452,11 @@ vg_dsa_parameter_search:
 	movz x7, #0, lsl #0
 	add x16, x8, #0
 	add x14, x12, #2
-2243:
+2237:
 	str x7, [x16, #0]
 	add x16, x16, #8
 	sub x14, x14, #1
-	cbnz x14, 2243b
+	cbnz x14, 2237b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x11, #0
@@ -25447,21 +25467,21 @@ vg_dsa_parameter_search:
 	ldr x2, [x0, #152]
 	movz x3, #0, lsl #0
 	movz x6, #7, lsl #0
-2244:
+2238:
 	sub x2, x2, #1
 	lsl x3, x3, #8
 	ldrb w4, [x1, #0]
 	add x3, x3, x4
 	add x1, x1, #1
 	and x5, x2, x6
-	cbz x5, 2245f
-	b 2246f
-2245:
+	cbz x5, 2239f
+	b 2240f
+2239:
 	add x5, x8, x2
 	str x3, [x5, #0]
 	movz x3, #0, lsl #0
-2246:
-	cbnz x2, 2244b
+2240:
+	cbnz x2, 2238b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	movz x7, #0, lsl #0
@@ -25471,13 +25491,13 @@ vg_dsa_parameter_search:
 	add x16, x16, x16
 	add x16, x16, x0
 	add x16, x16, #256
-2247:
+2241:
 	ldr x3, [x16, #0]
 	adcs x3, x3, x3
 	str x3, [x16, #0]
 	add x16, x16, #8
 	sub x14, x14, #1
-	cbnz x14, 2247b
+	cbnz x14, 2241b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x16, x0, #256
@@ -25487,13 +25507,13 @@ vg_dsa_parameter_search:
 	add x17, x17, x0
 	add x17, x17, #256
 	add x14, x12, #0
-2248:
+2242:
 	ldr x3, [x16, #0]
 	str x3, [x17, #0]
 	add x16, x16, #8
 	add x17, x17, #8
 	sub x14, x14, #1
-	cbnz x14, 2248b
+	cbnz x14, 2242b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x11, #0
@@ -25502,38 +25522,15 @@ vg_dsa_parameter_search:
 	movz x7, #0, lsl #0
 	add x16, x8, #0
 	add x14, x12, #2
-2249:
+2243:
 	str x7, [x16, #0]
 	add x16, x16, #8
 	sub x14, x14, #1
-	cbnz x14, 2249b
-	lsl x6, x12, #6
-2250:
-	movz x7, #0, lsl #0
-	add x14, x12, #0
-	adds x3, x7, x7
-	add x16, x0, #256
-2251:
-	ldr x3, [x16, #0]
-	adcs x3, x3, x3
-	str x3, [x16, #0]
-	add x16, x16, #8
-	sub x14, x14, #1
-	cbnz x14, 2251b
-	add x16, x11, #0
-	add x16, x16, x0
-	add x16, x16, #256
-	add x14, x12, #1
-2252:
-	ldr x3, [x16, #0]
-	adcs x3, x3, x3
-	str x3, [x16, #0]
-	add x16, x16, #8
-	sub x14, x14, #1
-	cbnz x14, 2252b
-	movz x7, #0, lsl #0
-	add x14, x12, #0
-	subs x3, x7, x7
+	cbnz x14, 2243b
+	add x13, x0, #256
+	lsl x3, x12, #3
+	add x13, x13, x3
+	add x6, x12, #0
 	add x16, x11, #0
 	add x16, x16, x0
 	add x16, x16, #256
@@ -25541,54 +25538,81 @@ vg_dsa_parameter_search:
 	add x17, x17, x17
 	add x17, x17, x0
 	add x17, x17, #256
-	add x13, x11, #0
-	add x13, x13, x13
-	add x13, x13, x11
-	add x13, x13, x0
-	add x13, x13, #256
-2253:
+	add x8, x11, #0
+	add x8, x8, x8
+	add x8, x8, x11
+	add x8, x8, x0
+	add x8, x8, #256
+2244:
+	sub x13, x13, #8
+	ldr x14, [x13, #0]
+	movz x15, #0, lsl #0
+	movz x9, #64, lsl #0
+	adds x14, x14, x14
+2245:
+	ldr x3, [x16, #0]
+	adcs x3, x3, x3
+	str x3, [x16, #0]
+	ldr x3, [x16, #8]
+	adcs x3, x3, x3
+	str x3, [x16, #8]
+	ldr x3, [x16, #16]
+	adcs x3, x3, x3
+	str x3, [x16, #16]
+	ldr x3, [x16, #24]
+	adcs x3, x3, x3
+	str x3, [x16, #24]
+	ldr x3, [x16, #32]
+	adcs x3, x3, x3
+	str x3, [x16, #32]
+	subs x3, x7, x7
 	ldr x3, [x16, #0]
 	ldr x4, [x17, #0]
 	sbcs x3, x3, x4
-	str x3, [x13, #0]
-	add x16, x16, #8
-	add x17, x17, #8
-	add x13, x13, #8
-	sub x14, x14, #1
-	cbnz x14, 2253b
+	str x3, [x8, #0]
+	ldr x3, [x16, #8]
+	ldr x4, [x17, #8]
+	sbcs x3, x3, x4
+	str x3, [x8, #8]
+	ldr x3, [x16, #16]
+	ldr x4, [x17, #16]
+	sbcs x3, x3, x4
+	str x3, [x8, #16]
+	ldr x3, [x16, #24]
+	ldr x4, [x17, #24]
+	sbcs x3, x3, x4
+	str x3, [x8, #24]
+	ldr x3, [x16, #32]
+	ldr x4, [x17, #32]
+	sbcs x3, x3, x4
+	str x3, [x8, #32]
 	ldr x3, [x16, #0]
-	sbcs x3, x3, x7
-	str x3, [x13, #0]
-	sub x4, x7, #1
-	csel x15, x4, x7, hs
-	add x16, x11, #0
-	add x16, x16, x16
-	add x16, x16, x11
-	add x16, x16, x0
-	add x16, x16, #256
-	add x17, x11, #0
-	add x17, x17, x0
-	add x17, x17, #256
-	add x14, x12, #1
-	movz x3, #1, lsl #0
-	subs x3, x15, x3
-2254:
-	ldr x3, [x16, #0]
-	ldr x4, [x17, #0]
-	csel x4, x3, x4, hs
-	str x4, [x17, #0]
-	add x16, x16, #8
-	add x17, x17, #8
-	sub x14, x14, #1
-	cbnz x14, 2254b
-	add x16, x0, #256
-	ldr x3, [x16, #0]
-	movz x4, #1, lsl #0
-	and x4, x4, x15
-	orr x3, x3, x4
+	ldr x4, [x8, #0]
+	csel x3, x4, x3, hs
 	str x3, [x16, #0]
+	ldr x3, [x16, #8]
+	ldr x4, [x8, #8]
+	csel x3, x4, x3, hs
+	str x3, [x16, #8]
+	ldr x3, [x16, #16]
+	ldr x4, [x8, #16]
+	csel x3, x4, x3, hs
+	str x3, [x16, #16]
+	ldr x3, [x16, #24]
+	ldr x4, [x8, #24]
+	csel x3, x4, x3, hs
+	str x3, [x16, #24]
+	ldr x3, [x16, #32]
+	ldr x4, [x8, #32]
+	csel x3, x4, x3, hs
+	str x3, [x16, #32]
+	adcs x15, x15, x15
+	adds x14, x14, x14
+	sub x9, x9, #1
+	cbnz x9, 2245b
+	str x15, [x13, #0]
 	sub x6, x6, #1
-	cbnz x6, 2250b
+	cbnz x6, 2244b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	movz x7, #0, lsl #0
@@ -25609,7 +25633,7 @@ vg_dsa_parameter_search:
 	add x8, x8, x11
 	add x8, x8, x0
 	add x8, x8, #256
-2255:
+2246:
 	ldr x3, [x16, #0]
 	ldr x4, [x17, #0]
 	and x4, x4, x15
@@ -25619,7 +25643,7 @@ vg_dsa_parameter_search:
 	add x17, x17, #8
 	add x8, x8, #8
 	sub x14, x14, #1
-	cbnz x14, 2255b
+	cbnz x14, 2246b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x16, x11, #0
@@ -25637,13 +25661,13 @@ vg_dsa_parameter_search:
 	add x14, x12, #0
 	adds x3, x7, x7
 	add x16, x0, #256
-2256:
+2247:
 	ldr x3, [x16, #0]
 	adcs x3, x3, x3
 	str x3, [x16, #0]
 	add x16, x16, #8
 	sub x14, x14, #1
-	cbnz x14, 2256b
+	cbnz x14, 2247b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x11, #0
@@ -25658,21 +25682,21 @@ vg_dsa_parameter_search:
 	ldr x15, [x0, #176]
 	movz x2, #0, lsl #0
 	movz x6, #7, lsl #0
-2257:
+2248:
 	and x5, x2, x6
-	cbz x5, 2258f
-	b 2259f
-2258:
+	cbz x5, 2249f
+	b 2250f
+2249:
 	add x5, x8, x2
 	ldr x3, [x5, #0]
 	and x3, x3, x15
-2259:
+2250:
 	sub x1, x1, #1
 	strb w3, [x1, #0]
 	lsr x3, x3, #8
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2257b
+	cbnz x9, 2248b
 	ldr x12, [x0, #48]
 	ldr x11, [x0, #224]
 	add x8, x0, #256
@@ -25682,25 +25706,25 @@ vg_dsa_parameter_search:
 	ldr x15, [x0, #176]
 	movz x2, #0, lsl #0
 	movz x6, #7, lsl #0
-2260:
+2251:
 	and x5, x2, x6
-	cbz x5, 2261f
-	b 2262f
-2261:
+	cbz x5, 2252f
+	b 2253f
+2252:
 	add x5, x8, x2
 	ldr x3, [x5, #0]
 	and x3, x3, x15
-2262:
+2253:
 	sub x1, x1, #1
 	strb w3, [x1, #0]
 	lsr x3, x3, #8
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2260b
+	cbnz x9, 2251b
 	ldr x1, [x0, #160]
 	ldrb w3, [x1, #0]
 	lsr x3, x3, #7
-	cbz x3, 2263f
+	cbz x3, 2254f
 	ldr x0, [sp, #40]
 	movz x1, #5120, lsl #0
 	ldr x2, [sp, #112]
@@ -25711,22 +25735,22 @@ vg_dsa_parameter_search:
 	add x4, sp, #152
 	bl {vg_dsa_probable_prime_1024}
 	add w0, w0, #0
-	cbz x0, 2265f
+	cbz x0, 2256f
 	ldr x3, [sp, #152]
 	ldr x4, [sp, #128]
 	add x3, x3, x4
 	str x3, [sp, #128]
-	b 2266f
-2265:
-2266:
+	b 2257f
+2256:
+2257:
 	lsr x3, x0, #1
 	add x0, x0, x3
 	str x0, [sp, #152]
-	b 2264f
-2263:
+	b 2255f
+2254:
 	movz x3, #3, lsl #0
 	str x3, [sp, #152]
-2264:
+2255:
 	ldr x0, [sp, #40]
 	movz x3, #27840, lsl #0
 	add x0, x0, x3
@@ -25734,9 +25758,9 @@ vg_dsa_parameter_search:
 	str x3, [x0, #16]
 	ldr x3, [x0, #16]
 	sub x3, x3, #3
-	cbz x3, 2267f
-	b 2268f
-2267:
+	cbz x3, 2258f
+	b 2259f
+2258:
 	ldr x3, [x0, #0]
 	add x3, x3, #1
 	str x3, [x0, #0]
@@ -25748,23 +25772,23 @@ vg_dsa_parameter_search:
 	movz x7, #0, lsl #0
 	movz x4, #1, lsl #0
 	csel x5, x4, x7, hs
-	cbz x5, 2269f
+	cbz x5, 2260f
 	movz x3, #2, lsl #0
 	str x3, [x0, #16]
-	b 2270f
-2269:
+	b 2261f
+2260:
 	movz x3, #3, lsl #0
 	str x3, [x0, #16]
-2270:
-2268:
+2261:
+2259:
 	ldr x3, [x0, #16]
 	sub x3, x3, #3
-	cbz x3, 2214b
+	cbz x3, 2208b
 	ldr x3, [sp, #152]
 	sub x3, x3, #1
-	cbz x3, 2271f
-	b 2272f
-2271:
+	cbz x3, 2262f
+	b 2263f
+2262:
 	ldr x3, [sp, #112]
 	ldr x4, [sp, #128]
 	ldr x6, [sp, #120]
@@ -25787,12 +25811,12 @@ vg_dsa_parameter_search:
 	lsl x4, x4, #2
 	sub x3, x0, x4
 	sub x4, x3, #3
-	cbz x4, 2273f
+	cbz x4, 2264f
 	add x3, x3, x3
 	sub x3, x3, #1
 	str x3, [sp, #152]
-	b 2274f
-2273:
+	b 2265f
+2264:
 	ldr x4, [sp, #104]
 	movz x5, #16384, lsl #0
 	subs x4, x4, x5
@@ -25800,37 +25824,37 @@ vg_dsa_parameter_search:
 	movz x5, #0, lsl #0
 	csel x3, x4, x5, hs
 	str x3, [sp, #152]
-2274:
-2272:
-2213:
+2265:
+2263:
+2207:
 	ldr x0, [sp, #152]
 	sub x0, x0, #3
-	cbz x0, 2275f
-	b 2276f
-2275:
+	cbz x0, 2266f
+	b 2267f
+2266:
 	ldr x3, [sp, #464]
 	sub x3, x3, #1
 	str x3, [sp, #464]
-2276:
-	b 2204f
-2203:
+2267:
+	b 2198f
+2197:
 	movz x3, #0, lsl #0
 	str x3, [sp, #152]
-2204:
-	b 2202f
-2201:
+2198:
+	b 2196f
+2195:
 	movz x3, #2, lsl #0
 	str x3, [sp, #152]
-2202:
+2196:
 	ldr x0, [sp, #152]
 	sub x0, x0, #3
-	cbz x0, 2200b
+	cbz x0, 2194b
 	ldr x14, [sp, #456]
 	ldr x15, [sp, #448]
 	ldr x3, [sp, #152]
-	cbz x3, 2277f
+	cbz x3, 2268f
 	sub x3, x3, #1
-	cbz x3, 2279f
+	cbz x3, 2270f
 	movz x11, #0, lsl #0
 	movz x10, #0, lsl #0
 	ldr x12, [sp, #472]
@@ -25839,8 +25863,8 @@ vg_dsa_parameter_search:
 	str x12, [x15, #0]
 	movz x9, #3, lsl #0
 	str x9, [sp, #472]
-	b 2280f
-2279:
+	b 2271f
+2270:
 	movz x11, #0, lsl #0
 	movz x10, #0, lsl #0
 	ldr x12, [sp, #128]
@@ -25849,9 +25873,9 @@ vg_dsa_parameter_search:
 	str x12, [x15, #0]
 	movz x9, #1, lsl #0
 	str x9, [sp, #472]
-2280:
-	b 2278f
-2277:
+2271:
+	b 2269f
+2268:
 	ldr x10, [sp, #120]
 	ldr x9, [sp, #472]
 	sub x10, x10, x9
@@ -25862,7 +25886,7 @@ vg_dsa_parameter_search:
 	movz x12, #0, lsl #0
 	movz x13, #1, lsl #0
 	csel x12, x13, x12, hs
-	cbz x12, 2281f
+	cbz x12, 2272f
 	movz x11, #0, lsl #0
 	movz x10, #0, lsl #0
 	ldr x12, [sp, #472]
@@ -25871,8 +25895,8 @@ vg_dsa_parameter_search:
 	str x12, [x15, #0]
 	movz x9, #3, lsl #0
 	str x9, [sp, #472]
-	b 2282f
-2281:
+	b 2273f
+2272:
 	lsl x12, x9, #8
 	subs x13, x10, x12
 	csel x10, x10, x12, hs
@@ -25886,11 +25910,11 @@ vg_dsa_parameter_search:
 	str x12, [x15, #0]
 	movz x9, #0, lsl #0
 	str x9, [sp, #472]
-2282:
-2278:
+2273:
+2269:
 	ldr x3, [sp, #152]
 	sub x3, x3, #1
-	cbz x3, 2283f
+	cbz x3, 2274f
 	ldr x3, [sp, #48]
 	str x3, [sp, #152]
 	ldr x3, [sp, #56]
@@ -25898,32 +25922,32 @@ vg_dsa_parameter_search:
 	ldr x11, [sp, #152]
 	ldr x12, [sp, #168]
 	movz x13, #0, lsl #0
-2285:
+2276:
 	strb w13, [x11, #0]
 	add x11, x11, #1
 	sub x12, x12, #1
-	cbnz x12, 2285b
+	cbnz x12, 2276b
 	movz x0, #0, lsl #0
-	b 2284f
-2283:
+	b 2275f
+2274:
 	ldr x12, [sp, #40]
 	movz x3, #27008, lsl #0
 	add x12, x12, x3
 	ldr x2, [sp, #48]
 	ldr x9, [sp, #56]
-	cbnz x9, 2286f
-	b 2287f
-2286:
-2288:
+	cbnz x9, 2277f
+	b 2278f
+2277:
+2279:
 	ldrb w0, [x12, #0]
 	strb w0, [x2, #0]
 	add x12, x12, #1
 	add x2, x2, #1
 	sub x9, x9, #1
-	cbnz x9, 2288b
-2287:
+	cbnz x9, 2279b
+2278:
 	movz x0, #1, lsl #0
-2284:
+2275:
 	ldr x0, [sp, #472]
 21:
 	ldr x9, [sp, #384]
