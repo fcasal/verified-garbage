@@ -28,7 +28,7 @@ namespace VG.Impl.Aes.AArch64
 materialize_code expandKey
 materialize_code ctr32
 materialize_code ctr32To
-materialize_code encryptBlocks
+materialize_code encryptBlocksN
 materialize_code decryptBlocks
 end VG.Impl.Aes.AArch64
 
