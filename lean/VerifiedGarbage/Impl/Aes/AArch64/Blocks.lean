@@ -27,11 +27,11 @@ Only `x0` (the first round key), `x1`, `x2` during the key loop, `x3` (the
 data), `x4` (the blocks left), `x5` and the loop tests (`t0`) hold public
 values; no address and no branch depends on anything else.
 
-`vg_aes_encrypt_blocks` is `encryptBlocksN`: one to four blocks (one, as the
-modes whose blocks each need the one before give it) are encrypted one at a
-time by vector permutations (`Vperm.lean`), with no round key bitsliced and
-nothing written to `scratch`; any other `n` runs the bitsliced code. `vg_aes_decrypt_blocks`
-is `decryptBlocksN`, the same for decryption.
+`vg_aes_encrypt_blocks` is `encryptBlocksN`, and `vg_aes_decrypt_blocks` is
+`decryptBlocksN`: they do not run the bitsliced code above, but take every
+block one at a time by vector permutations (`Vperm.lean`, `few`), with no
+round key bitsliced and nothing written to `scratch`, which costs less at
+every size (measured).
 -/
 
 @[expose] public section
@@ -124,14 +124,14 @@ def few (core : Prog isa) : Prog isa :=
 costs more than five blocks do (measured). -/
 def isFew : List Instr := [.subImm .x .x6 .x3 1, .lsr .x .x6 .x6 2]
 
-/-- `vg_aes_encrypt_blocks`: one to four blocks by vector permutations, one
-at a time, any other number of blocks bitsliced. -/
+/-- `vg_aes_encrypt_blocks`: nothing for no block, else each block by
+vector permutations, one at a time. -/
 def encryptBlocksN : Prog isa :=
-  .seq (.block isFew) (.ite (.zero .x .x6) (few Vperm.core) encryptBlocks)
+  .ite (.zero .x .x3) (.block []) (few Vperm.core)
 
-/-- `vg_aes_decrypt_blocks`: one to four blocks by vector permutations, one
-at a time, any other number of blocks bitsliced. -/
+/-- `vg_aes_decrypt_blocks`: nothing for no block, else each block by
+vector permutations, one at a time. -/
 def decryptBlocksN : Prog isa :=
-  .seq (.block isFew) (.ite (.zero .x .x6) (few Vperm.Dec.core) decryptBlocks)
+  .ite (.zero .x .x3) (.block []) (few Vperm.Dec.core)
 
 end VG.Impl.Aes.AArch64
