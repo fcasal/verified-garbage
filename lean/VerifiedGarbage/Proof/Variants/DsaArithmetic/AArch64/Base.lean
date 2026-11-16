@@ -568,18 +568,22 @@ def variant : Backend where
   parametersVerified := parameters_verified Mont.calledProductEight
   deriveVerified := derive_verified Mont.calledProductEight
   parametersSp := checks_sp checks 2 (by decide)
+  parametersNoDit := by lit_decide
   parametersDepth := checks_depth checks 0 (by decide)
   deriveSp := checks_sp checks 3 (by decide)
   deriveDepth := checks_depth checks 1 (by decide)
   signSp := checks_sp checks 4 (by decide)
+  signNoDit := by lit_decide
   signDepth := checks_depth checks 2 (by decide)
   prevalidatedSignVerified := prevalidated_sign_verified Mont.calledProductEight
   prevalidatedSignSp := checks_sp checks 5 (by decide)
+  prevalidatedSignNoDit := by lit_decide
   prevalidatedSignDepth := checks_depth checks 3 (by decide)
   validatePrivateVerified := validating_private_verified Mont.calledProductEight
   validatePrivateSp := checks_sp checks 6 (by decide)
   deriveCheckedVerified := derive_checked_verified Mont.calledProductEight
   deriveCheckedSp := checks_sp checks 7 (by decide)
+  deriveCheckedNoDit := by lit_decide
   deriveCheckedDepth := checks_depth checks 4 (by decide)
   stackBound := by decide
 
