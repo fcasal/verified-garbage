@@ -97,6 +97,7 @@ theorem blocks : Verified PPC64LE.target
     (n := 16) (post := Proof.Poly1305.blocksPost PPC64LE.abi.ptrBits) (wa := false) (stack := 0)
     (bytes := 160) blocksScratch (by decide) (by decide)
     (fun _ _ _ _ _ _ => by rw [Curry.apply_const]; trivial) (Proof.Poly1305.blocksPost_local _)
+    (fun vs m m₁ m₂ r hl _ hb h => Proof.Poly1305.blocksPostOut_local _ vs m m₁ m₂ r hl hb h)
     (PPC64LE.sat_regs (by decide) (by decide) (by decide +kernel) (by rw [Curry.apply_const]; trivial))
 
 theorem update : Verified PPC64LE.target
@@ -106,6 +107,7 @@ theorem update : Verified PPC64LE.target
     (n := 16) (post := Spec.Poly1305.updatePost PPC64LE.abi.ptrBits) (wa := false) (stack := 0)
     (bytes := 160) updateScratch (by decide) (by decide)
     (fun _ _ _ _ _ _ => by rw [Curry.apply_const]; trivial) (Proof.Poly1305.updatePost_local _)
+    (fun vs m m₁ m₂ r hl _ hb h => Proof.Poly1305.updatePostOut_local _ vs m m₁ m₂ r hl hb h)
     (PPC64LE.sat_regs (by decide) (by decide) (by decide +kernel) (by rw [Curry.apply_const]; trivial))
 
 theorem finalize : Verified PPC64LE.target
@@ -115,6 +117,7 @@ theorem finalize : Verified PPC64LE.target
     (n := 16) (post := Spec.Poly1305.finalizePost PPC64LE.abi.ptrBits) (wa := false) (stack := 0)
     (bytes := 160) finalizeScratch (by decide) (by decide)
     (fun _ _ _ _ _ => by rw [Curry.apply_const]; trivial) (Proof.Poly1305.finalizePost_local _)
+    (fun vs m m₁ m₂ r hl _ hb h => Proof.Poly1305.finalizePostOut_local _ vs m m₁ m₂ r hl hb h)
     (PPC64LE.sat_regs (by decide) (by decide) (by decide +kernel) (by rw [Curry.apply_const]; trivial))
 
 end VG.Proof.Poly1305.PPC64LE.Shared

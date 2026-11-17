@@ -1229,7 +1229,7 @@ theorem correct (hP : Ok P) (hf : CalleeOk P (compress P)) {s₀ : State}
   obtain hpi : Pre w (inner s₀) := ⟨hp.rd, hp.wr, hp.st_scr, hp.d_st, hp.d_scr⟩
   refine WP.seq (WP.cons PPC64LE.exec_mflr (WP.block_nil (WP.seq ?_)))
   refine WP.frameReg (by exact hs.sp48) (fun R hR => ?_) (WP.mono (correctMain hP hf hpi)
-    fun s' ⟨hk, hsp, hpost⟩ => ?_) (by rw [fdepth_of_noFrames (noFrames_updateMain hf)]; decide)
+    fun s' ⟨hk, hsp, hpost⟩ m' u f => ?_) (by rw [fdepth_of_noFrames (noFrames_updateMain hf)]; decide)
     (pushFrames_of_noFrames (noFrames_updateMain hf))
   · rw [show (s₀.write .r0 s₀.lr).wr = s₀.wr from rfl, hp.wr] at hR
     simp only [List.mem_cons, List.not_mem_nil, or_false] at hR
@@ -1249,7 +1249,8 @@ theorem correct (hP : Ok P) (hf : CalleeOk P (compress P)) {s₀ : State}
       change Spec.Blake2.Repr P h0 s'.mem (s₀.gpr .r3)
         (d ++ bytesAt (inner s₀).mem (s₀.gpr .r5) (s₀.gpr .r6).toNat) at this
       rw [e] at this
-      exact this
+      -- The pop loses the frame's bytes, which lie apart from the state.
+      exact repr_congr hP (fun i hi => lost_byte f (R := stR s₀ w) hs.st.symm hi) this
 
 end VG.Proof.Blake2.PPC64LE.Stream.Update
 
@@ -1631,7 +1632,7 @@ theorem correct (hP : Ok P) (hf : CalleeOk P (compress P)) {s₀ : State}
   obtain hpi : Pre w (inner s₀) := ⟨hp.rd, hp.wr, hp.st_out, hp.st_scr, hp.out_scr⟩
   refine WP.seq (WP.cons PPC64LE.exec_mflr (WP.block_nil (WP.seq ?_)))
   refine WP.frameReg (by exact hs.sp48) (fun R hR => ?_) (WP.mono (correctMain hP hf hpi)
-    fun s' ⟨hk, hsp, hpost⟩ => ?_) (by rw [fdepth_of_noFrames (noFrames_finalizeMain hf)]; decide)
+    fun s' ⟨hk, hsp, hpost⟩ m' u f => ?_) (by rw [fdepth_of_noFrames (noFrames_finalizeMain hf)]; decide)
     (pushFrames_of_noFrames (noFrames_finalizeMain hf))
   · rw [show (s₀.write .r0 s₀.lr).wr = s₀.wr from rfl, hp.wr] at hR
     simp only [List.mem_cons, List.not_mem_nil, or_false] at hR
@@ -1645,7 +1646,9 @@ theorem correct (hP : Ok P) (hf : CalleeOk P (compress P)) {s₀ : State}
       rw [hk r hr]
       simp only [framed, State.write, h0, ite_false]
     · simp [State.write]
-    · exact hpost h0 d (repr_congr hP (fun i hi => write_frame_bytes (R := stR s₀ w) hs.st
+    · -- The pop loses the frame's bytes, which lie apart from the digest.
+      refine Eq.trans (bytesAt_congr fun i hi => lost_byte f (R := outR s₀ w) hs.out.symm hi) ?_
+      exact hpost h0 d (repr_congr hP (fun i hi => write_frame_bytes (R := stR s₀ w) hs.st
         (by show bufOff w + blockBytes w < 2 ^ 64; omega_arith) hi) hm) hlt hc
 
 end
@@ -1817,6 +1820,7 @@ theorem updateB_framed : Verified PPC64LE.target
   PPC64LE.Verified.stackScratch (nm := "scratch") (e := .u64) (n := 72) (stack := 48) (bytes := 608)
     updateB_verified (by decide) (by decide)
     (fun _ _ _ _ _ _ => by rw [Curry.apply_const]; trivial) (Proof.Blake2.updateBPost_local _)
+    (fun vs m m₁ m₂ r hl _ hb h => Proof.Blake2.updateBPost_out _ vs m m₁ m₂ r hl hb h)
     (PPC64LE.sat_regs (by decide) (by decide) (by decide +kernel) (by rw [Curry.apply_const]; trivial))
 
 theorem finalizeB_framed : Verified PPC64LE.target
@@ -1825,6 +1829,7 @@ theorem finalizeB_framed : Verified PPC64LE.target
   PPC64LE.Verified.stackScratch (nm := "scratch") (e := .u64) (n := 72) (stack := 48) (bytes := 608)
     finalizeB_verified (by decide) (by decide)
     (fun _ _ _ _ _ => by rw [Curry.apply_const]; trivial) (Proof.Blake2.finalizeBPost_local _)
+    (fun vs m m₁ m₂ r hl _ hb h => Proof.Blake2.finalizeBPost_out _ vs m m₁ m₂ r hl hb h)
     (PPC64LE.sat_regs (by decide) (by decide) (by decide +kernel) (by rw [Curry.apply_const]; trivial))
 
 theorem updateS_framed : Verified PPC64LE.target
@@ -1833,6 +1838,7 @@ theorem updateS_framed : Verified PPC64LE.target
   PPC64LE.Verified.stackScratch (nm := "scratch") (e := .u64) (n := 72) (stack := 48) (bytes := 608)
     updateS_verified (by decide) (by decide)
     (fun _ _ _ _ _ _ => by rw [Curry.apply_const]; trivial) (Proof.Blake2.updateSPost_local _)
+    (fun vs m m₁ m₂ r hl _ hb h => Proof.Blake2.updateSPost_out _ vs m m₁ m₂ r hl hb h)
     (PPC64LE.sat_regs (by decide) (by decide) (by decide +kernel) (by rw [Curry.apply_const]; trivial))
 
 theorem finalizeS_framed : Verified PPC64LE.target
@@ -1841,6 +1847,7 @@ theorem finalizeS_framed : Verified PPC64LE.target
   PPC64LE.Verified.stackScratch (nm := "scratch") (e := .u64) (n := 72) (stack := 48) (bytes := 608)
     finalizeS_verified (by decide) (by decide)
     (fun _ _ _ _ _ => by rw [Curry.apply_const]; trivial) (Proof.Blake2.finalizeSPost_local _)
+    (fun vs m m₁ m₂ r hl _ hb h => Proof.Blake2.finalizeSPost_out _ vs m m₁ m₂ r hl hb h)
     (PPC64LE.sat_regs (by decide) (by decide) (by decide +kernel) (by rw [Curry.apply_const]; trivial))
 
 end VG.Proof.Blake2.PPC64LE.Stream

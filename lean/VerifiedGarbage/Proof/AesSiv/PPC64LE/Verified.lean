@@ -200,7 +200,8 @@ theorem init_framed : Verified PPC64LE.target (Impl.StackScratch.PPC64LE.withSta
   Verified.stackScratch (sig := Spec.Siv.initSig) (nm := "scratch") (e := .u64) (n := 320)
     (pre := Spec.Siv.initPre PPC64LE.abi.ptrBits) (post := Spec.Siv.initPost PPC64LE.abi.ptrBits)
     (wa := true) (stack := 0) (bytes := 2592) init_verified (by decide) (by decide)
-    (Proof.AesSiv.initPre_local _) (Proof.AesSiv.initPost_local _) initFrameSat_pre
+    (Proof.AesSiv.initPre_local _) (Proof.AesSiv.initPost_local _)
+    (fun vs m m₁ m₂ r hl _ => Proof.AesSiv.initPostOut_local _ vs m m₁ m₂ r hl) initFrameSat_pre
 
 /-! ## Satisfiable preconditions -/
 
@@ -288,7 +289,8 @@ theorem encrypt_framed : Verified PPC64LE.target (Impl.StackScratch.PPC64LE.with
   Verified.stackScratchLists (sig := Spec.Siv.encryptSig) (nm := "work") (e := .u64) (n := 322)
     (pre := Spec.Siv.encryptPre PPC64LE.abi.ptrBits) (post := Proof.AesSiv.encryptRoundsPost PPC64LE.abi.ptrBits)
     (wa := true) (stack := 0) (bytes := 2608) encrypt_verified (by decide) (by decide)
-    (Proof.AesSiv.encryptPre_local _) (Proof.AesSiv.encryptPost_local _) encFrameSat_pre
+    (Proof.AesSiv.encryptPre_local _) (Proof.AesSiv.encryptPost_local _)
+    (fun vs m m₁ m₂ r hl _ => Proof.AesSiv.encryptPostOut_local _ vs m m₁ m₂ r hl) encFrameSat_pre
 
 /-- `decrypt` with its working space in a frame of 2608 bytes. -/
 theorem decrypt_framed : Verified PPC64LE.target (Impl.StackScratch.PPC64LE.withStackScratch 2608 .r10
@@ -297,7 +299,8 @@ theorem decrypt_framed : Verified PPC64LE.target (Impl.StackScratch.PPC64LE.with
     (pre := Spec.Siv.decryptPre PPC64LE.abi.ptrBits) (post := Proof.AesSiv.decryptRoundsPost PPC64LE.abi.ptrBits)
     (wa := true) (stack := 0) (bytes := 2608) (leak := some (Spec.Siv.decryptLeak PPC64LE.abi.ptrBits))
     decrypt_verified (by decide) (by decide)
-    (Proof.AesSiv.decryptPre_local _) (Proof.AesSiv.decryptPost_local _) decFrameSat_pre
+    (Proof.AesSiv.decryptPre_local _) (Proof.AesSiv.decryptPost_local _)
+    (fun vs m m₁ m₂ r hl _ => Proof.AesSiv.decryptPostOut_local _ vs m m₁ m₂ r hl) decFrameSat_pre
     (hleak := Proof.AesSiv.decryptLeak_local _)
 
 end VG.Proof.AesSiv.PPC64LE

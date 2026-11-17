@@ -393,6 +393,7 @@ theorem seal_framed [VG.Proof.Gcm.PPC64LE.GhashLaw] (hti : TagInputEq) :
     (n := 478) (pre := Spec.GcmSiv.sealPre PPC64LE.abi.ptrBits)
     (post := Proof.AesGcmSiv.sealRoundsPost PPC64LE.abi.ptrBits) (wa := true) (stack := 0) (bytes := 3936) (m := 0)
     (seal_verified hti) (by decide) (by decide) (Proof.AesGcmSiv.sealPre_local _) (Proof.AesGcmSiv.sealPost_local _)
+    (fun vs m m₁ m₂ r hl _ => Proof.AesGcmSiv.sealPostOut_local _ vs m m₁ m₂ r hl)
     sealFrameSat_pre
 
 /-- A state satisfying `vg_aes_gcm_siv_open`'s precondition, without the
@@ -415,6 +416,7 @@ theorem open_framed [VG.Proof.Gcm.PPC64LE.GhashLaw] (hti : TagInputEq) :
     (leak := some (Spec.GcmSiv.openLeak PPC64LE.abi.ptrBits))
     (Proof.AesGcmSiv.Verified.of_openScratch (open_verified hti)) (by decide) (by decide)
     (Proof.AesGcmSiv.openPre_local _) (Proof.AesGcmSiv.openPost_local _)
+    (fun vs m m₁ m₂ r hl _ => Proof.AesGcmSiv.openPostOut_local _ vs m m₁ m₂ r hl)
     openFrameSat_pre (hleak := Proof.AesGcmSiv.openLeak_local _)
 
 end VG.Proof.AesGcmSiv.PPC64LE

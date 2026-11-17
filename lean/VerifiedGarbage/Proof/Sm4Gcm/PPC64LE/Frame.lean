@@ -313,6 +313,32 @@ theorem post_withScratch {pb : Nat} {sig : Sig} (nm : String) (e : Elem) (n : Na
     (R := fun (P Q : Mem → BitVec (sig.retBits pb) → Prop) => ∀ m' r, P m' r → Q m' r)
     (fun vs m₁ m₂ hl hb m' r => h vs m₁ m₂ m' r hl hb) vs m₁ m₂ hl hb m' r
 
+/-- A postcondition that reads the memory on return only within the buffers
+still does, taking one more array argument. -/
+theorem postOut_withScratch {pb : Nat} {sig : Sig} (nm : String) (e : Elem) (n : Nat) {post : sig.Post pb}
+    (h : ∀ vs m m₁ m₂ r, vs.length = (sig.words pb).length →
+      (∀ b ∈ Sig.bufs sig.params vs, ∀ a, b.1.Contains a 1 → m₁ a = m₂ a) →
+      Curry.apply (sig.words pb) post vs m m₁ r → Curry.apply (sig.words pb) post vs m m₂ r) :
+    ∀ vs m m₁ m₂ r, vs.length = ((sig.withScratch nm e n).words pb).length →
+      (∀ b ∈ Sig.bufs (sig.withScratch nm e n).params vs, ∀ a, b.1.Contains a 1 → m₁ a = m₂ a) →
+      Curry.apply _ (Curry.withScratch pb nm e n sig.params post) vs m m₁ r →
+        Curry.apply _ (Curry.withScratch pb nm e n sig.params post) vs m m₂ r := by
+  intro vs m m₁ m₂ r hl hb
+  rw [Sig.words_withScratch, List.length_append, List.length_singleton] at hl
+  obtain ⟨vs', x, rfl⟩ : ∃ vs' x, vs = vs' ++ [x] := by
+    rcases List.eq_nil_or_concat vs with h0 | ⟨L, b, rfl⟩
+    · subst h0; simp at hl
+    · exact ⟨L, b, List.concat_eq_append ..⟩
+  have hl' : vs'.length = (sig.words pb).length := by
+    rw [List.length_append, List.length_singleton] at hl; omega_using [hl]
+  show Curry.apply _ (Curry.withScratch pb nm e n sig.params post) (vs' ++ [x]) m m₁ r →
+    Curry.apply _ (Curry.withScratch pb nm e n sig.params post) (vs' ++ [x]) m m₂ r
+  rw [Curry.apply_withScratch pb nm e n sig.params post vs' x hl']
+  refine h vs' m m₁ m₂ r hl' fun b hb' => hb b ?_
+  show b ∈ Sig.bufs (sig.params ++ [((nm, .array true e n) : String × Param)]) (vs' ++ [x])
+  rw [Sig.bufs_append_array pb nm e n x sig.params vs' hl']
+  exact List.mem_append_left _ hb'
+
 /-- A leak local within the buffers stays local taking one more array argument. -/
 theorem leakLocal_withScratch {pb : Nat} {sig : Sig} (nm : String) (e : Elem) (n : Nat)
     {leak : Option (Curry (sig.words pb) (Mem → List Nat))} (h : Sig.LeakLocal pb sig leak) :
@@ -376,8 +402,10 @@ theorem init_framed :
     (PPC64LE.Verified.stackScratch (sig := Spec.Sm4.Gcm.initSig.withScratch "scratch" .u64 320) (nm := "sm4")
       (e := .u64) (n := 408) (wa := true) (stack := 0) (bytes := 3296) init_verified (by decide) (by decide)
       (pre_withScratch "scratch" .u64 320 (Proof.Sm4Gcm.pre_local _ _))
-      (post_withScratch "scratch" .u64 320 (Proof.Sm4Gcm.initPost_local _)) initInnerSat_pre)
-    (by decide) (by decide) (Proof.Sm4Gcm.pre_local _ _) (Proof.Sm4Gcm.initPost_local _) initFrameSat_pre
+      (post_withScratch "scratch" .u64 320 (Proof.Sm4Gcm.initPost_local _))
+      (fun vs m m₁ m₂ r hl _ => postOut_withScratch "scratch" .u64 320 (Proof.Sm4Gcm.initPostOut_local _) vs m m₁ m₂ r hl) initInnerSat_pre)
+    (by decide) (by decide) (Proof.Sm4Gcm.pre_local _ _) (Proof.Sm4Gcm.initPost_local _)
+    (fun vs m m₁ m₂ r hl _ => Proof.Sm4Gcm.initPostOut_local _ vs m m₁ m₂ r hl) initFrameSat_pre
 
 /-! ## `stream_encrypt` -/
 
@@ -406,8 +434,10 @@ theorem streamEncrypt_framed [VG.Proof.Gcm.PPC64LE.GhashLaw] :
     (PPC64LE.Verified.stackScratch (sig := Spec.Sm4.Gcm.streamCryptSig.withScratch "scratch" .u64 320) (nm := "sm4")
       (e := .u64) (n := 408) (wa := true) (stack := 0) (bytes := 3296) streamEncrypt_verified (by decide) (by decide)
       (pre_withScratch "scratch" .u64 320 (Proof.Sm4Gcm.pre_local _ _))
-      (post_withScratch "scratch" .u64 320 (Proof.Sm4Gcm.streamEncryptPost_local _)) streamEncryptInnerSat_pre)
-    (by decide) (by decide) (Proof.Sm4Gcm.pre_local _ _) (Proof.Sm4Gcm.streamEncryptPost_local _) streamEncryptFrameSat_pre
+      (post_withScratch "scratch" .u64 320 (Proof.Sm4Gcm.streamEncryptPost_local _))
+      (fun vs m m₁ m₂ r hl _ => postOut_withScratch "scratch" .u64 320 (Proof.Sm4Gcm.streamEncryptPostOut_local _) vs m m₁ m₂ r hl) streamEncryptInnerSat_pre)
+    (by decide) (by decide) (Proof.Sm4Gcm.pre_local _ _) (Proof.Sm4Gcm.streamEncryptPost_local _)
+    (fun vs m m₁ m₂ r hl _ => Proof.Sm4Gcm.streamEncryptPostOut_local _ vs m m₁ m₂ r hl) streamEncryptFrameSat_pre
 
 /-! ## `stream_decrypt` -/
 
@@ -436,8 +466,10 @@ theorem streamDecrypt_framed [VG.Proof.Gcm.PPC64LE.GhashLaw] :
     (PPC64LE.Verified.stackScratch (sig := Spec.Sm4.Gcm.streamCryptSig.withScratch "scratch" .u64 320) (nm := "sm4")
       (e := .u64) (n := 408) (wa := true) (stack := 0) (bytes := 3296) streamDecrypt_verified (by decide) (by decide)
       (pre_withScratch "scratch" .u64 320 (Proof.Sm4Gcm.pre_local _ _))
-      (post_withScratch "scratch" .u64 320 (Proof.Sm4Gcm.streamDecryptPost_local _)) streamDecryptInnerSat_pre)
-    (by decide) (by decide) (Proof.Sm4Gcm.pre_local _ _) (Proof.Sm4Gcm.streamDecryptPost_local _) streamDecryptFrameSat_pre
+      (post_withScratch "scratch" .u64 320 (Proof.Sm4Gcm.streamDecryptPost_local _))
+      (fun vs m m₁ m₂ r hl _ => postOut_withScratch "scratch" .u64 320 (Proof.Sm4Gcm.streamDecryptPostOut_local _) vs m m₁ m₂ r hl) streamDecryptInnerSat_pre)
+    (by decide) (by decide) (Proof.Sm4Gcm.pre_local _ _) (Proof.Sm4Gcm.streamDecryptPost_local _)
+    (fun vs m m₁ m₂ r hl _ => Proof.Sm4Gcm.streamDecryptPostOut_local _ vs m m₁ m₂ r hl) streamDecryptFrameSat_pre
 
 /-! ## `stream_finish` -/
 
@@ -466,8 +498,10 @@ theorem streamFinish_framed [VG.Proof.Gcm.PPC64LE.GhashLaw] :
     (PPC64LE.Verified.stackScratch (sig := Spec.Sm4.Gcm.streamFinishSig.withScratch "work" .u64 320) (nm := "sm4")
       (e := .u64) (n := 408) (wa := true) (stack := 0) (bytes := 3296) streamFinish_verified (by decide) (by decide)
       (pre_withScratch "work" .u64 320 (Proof.Sm4Gcm.pre_local _ _))
-      (post_withScratch "work" .u64 320 (Proof.Sm4Gcm.streamFinishPost_local _)) streamFinishInnerSat_pre)
-    (by decide) (by decide) (Proof.Sm4Gcm.pre_local _ _) (Proof.Sm4Gcm.streamFinishPost_local _) streamFinishFrameSat_pre
+      (post_withScratch "work" .u64 320 (Proof.Sm4Gcm.streamFinishPost_local _))
+      (fun vs m m₁ m₂ r hl _ => postOut_withScratch "work" .u64 320 (Proof.Sm4Gcm.streamFinishPostOut_local _) vs m m₁ m₂ r hl) streamFinishInnerSat_pre)
+    (by decide) (by decide) (Proof.Sm4Gcm.pre_local _ _) (Proof.Sm4Gcm.streamFinishPost_local _)
+    (fun vs m m₁ m₂ r hl _ => Proof.Sm4Gcm.streamFinishPostOut_local _ vs m m₁ m₂ r hl) streamFinishFrameSat_pre
 
 /-! ## `stream_verify` -/
 
@@ -496,8 +530,10 @@ theorem streamVerify_framed [VG.Proof.Gcm.PPC64LE.GhashLaw] :
     (PPC64LE.Verified.stackScratch (sig := Spec.Sm4.Gcm.streamVerifySig.withScratch "work" .u64 320) (nm := "sm4")
       (e := .u64) (n := 408) (wa := true) (stack := 0) (bytes := 3296) streamVerify_verified (by decide) (by decide)
       (pre_withScratch "work" .u64 320 (Proof.Sm4Gcm.pre_local _ _))
-      (post_withScratch "work" .u64 320 (Proof.Sm4Gcm.streamVerifyPost_local _)) streamVerifyInnerSat_pre)
-    (by decide) (by decide) (Proof.Sm4Gcm.pre_local _ _) (Proof.Sm4Gcm.streamVerifyPost_local _) streamVerifyFrameSat_pre
+      (post_withScratch "work" .u64 320 (Proof.Sm4Gcm.streamVerifyPost_local _))
+      (fun vs m m₁ m₂ r hl _ => postOut_withScratch "work" .u64 320 (Proof.Sm4Gcm.streamVerifyPostOut_local _) vs m m₁ m₂ r hl) streamVerifyInnerSat_pre)
+    (by decide) (by decide) (Proof.Sm4Gcm.pre_local _ _) (Proof.Sm4Gcm.streamVerifyPost_local _)
+    (fun vs m m₁ m₂ r hl _ => Proof.Sm4Gcm.streamVerifyPostOut_local _ vs m m₁ m₂ r hl) streamVerifyFrameSat_pre
 
 /-! ## `seal` -/
 
@@ -538,8 +574,10 @@ theorem seal_framed [VG.Proof.Gcm.PPC64LE.GhashLaw] :
     (PPC64LE.Verified.stackScratchArgs (sig := Spec.Sm4.Gcm.sealSig.withScratch "work" .u64 320) (nm := "sm4")
       (e := .u64) (n := 408) (wa := true) (stack := 0) (bytes := 3376) (m := 1) seal_verified (by decide)
       (by decide) (pre_withScratch "work" .u64 320 (Proof.Sm4Gcm.pre_local _ _))
-      (post_withScratch "work" .u64 320 (Proof.Sm4Gcm.sealPost_local _)) sealInnerSat_pre)
-    (by decide) (by decide) (Proof.Sm4Gcm.pre_local _ _) (Proof.Sm4Gcm.sealPost_local _) sealFrameSat_pre
+      (post_withScratch "work" .u64 320 (Proof.Sm4Gcm.sealPost_local _))
+      (fun vs m m₁ m₂ r hl _ => postOut_withScratch "work" .u64 320 (Proof.Sm4Gcm.sealPostOut_local _) vs m m₁ m₂ r hl) sealInnerSat_pre)
+    (by decide) (by decide) (Proof.Sm4Gcm.pre_local _ _) (Proof.Sm4Gcm.sealPost_local _)
+    (fun vs m m₁ m₂ r hl _ => Proof.Sm4Gcm.sealPostOut_local _ vs m m₁ m₂ r hl) sealFrameSat_pre
 
 /-! ## `open` -/
 
@@ -581,9 +619,11 @@ theorem open_framed [VG.Proof.Gcm.PPC64LE.GhashLaw] :
     (PPC64LE.Verified.stackScratchArgs (sig := Spec.Sm4.Gcm.openSig.withScratch "work" .u64 320) (nm := "sm4")
       (e := .u64) (n := 408) (wa := true) (stack := 0) (bytes := 3392) (m := 2) open_verified (by decide)
       (by decide) (pre_withScratch "work" .u64 320 (Proof.Sm4Gcm.pre_local _ _))
-      (post_withScratch "work" .u64 320 (Proof.Sm4Gcm.openPost_local _)) openInnerSat_pre
+      (post_withScratch "work" .u64 320 (Proof.Sm4Gcm.openPost_local _))
+      (fun vs m m₁ m₂ r hl _ => postOut_withScratch "work" .u64 320 (Proof.Sm4Gcm.openPostOut_local _) vs m m₁ m₂ r hl) openInnerSat_pre
       (hleak := leakLocal_withScratch "work" .u64 320 (Proof.Sm4Gcm.openLeak_local _)))
-    (by decide) (by decide) (Proof.Sm4Gcm.pre_local _ _) (Proof.Sm4Gcm.openPost_local _) openFrameSat_pre
+    (by decide) (by decide) (Proof.Sm4Gcm.pre_local _ _) (Proof.Sm4Gcm.openPost_local _)
+    (fun vs m m₁ m₂ r hl _ => Proof.Sm4Gcm.openPostOut_local _ vs m m₁ m₂ r hl) openFrameSat_pre
     (hleak := Proof.Sm4Gcm.openLeak_local _)
 
 end VG.Proof.Sm4Gcm.PPC64LE

@@ -54,6 +54,7 @@ theorem init_framed :
     (n := 288) (pre := Spec.Cmac.aesInitPre PPC64LE.abi.ptrBits)
     (post := Spec.Cmac.aesInitPost PPC64LE.abi.ptrBits) (wa := false) (stack := 0)
     (bytes := 2336) init_verified (by decide) (by decide) (initPre_local _) (initPost_local _)
+    (fun vs m m₁ m₂ r hl _ hb h => initPostOut_local _ vs m m₁ m₂ r hl hb h)
     initFrameSat_pre
 
 theorem absorb_framed :
@@ -63,6 +64,7 @@ theorem absorb_framed :
     (n := 288) (pre := Spec.Cmac.aesAbsorbPre PPC64LE.abi.ptrBits)
     (post := Spec.Cmac.aesAbsorbPost PPC64LE.abi.ptrBits) (wa := false) (stack := 0)
     (bytes := 2336) absorb_verified (by decide) (by decide) (absorbPre_local _) (absorbPost_local _)
+    (fun vs m m₁ m₂ r hl _ hb h => absorbPostOut_local _ vs m m₁ m₂ r hl hb h)
     absorbFrameSat_pre
 
 theorem finish_framed :
@@ -72,6 +74,7 @@ theorem finish_framed :
     (n := 288) (pre := Spec.Cmac.aesFinishPre PPC64LE.abi.ptrBits)
     (post := Spec.Cmac.aesFinishPost PPC64LE.abi.ptrBits) (wa := false) (stack := 0)
     (bytes := 2336) finish_verified (by decide) (by decide) (finishPre_local _) (finishPost_local _)
+    (fun vs m m₁ m₂ r hl _ hb h => finishPostOut_local _ vs m m₁ m₂ r hl hb h)
     finishFrameSat_pre
 
 end VG.Proof.CmacAes.Stream.PPC64LE

@@ -233,7 +233,8 @@ theorem WP.narrowAny {c : Prog isa} {s : State} {rd wr : List Region} {P : State
 /-- `WP.frameReg` for a body with any frames. -/
 theorem WP.frameRegAny {r : Reg} {main : Prog isa} {s₀ : State} {Q : State → Prop}
     (hsp : 48 ≤ s₀.sp.toNat) (hd : ∀ R ∈ s₀.wr, Region.Disjoint ⟨s₀.sp - 48 + 32, 16⟩ R)
-    (hmain : WP isa main (framed r s₀) fun s₂ => Q { s₂.write r (s₀.gpr r) with sp := s₀.sp })
+    (hmain : WP isa main (framed r s₀) fun s₂ => ∀ m u, Frame [⟨s₀.sp - 48, 48⟩] s₂.mem m →
+      Q { s₂.write r (s₀.gpr r) with sp := s₀.sp, mem := m, unknowns := u })
     (hn : sdepth main + 48 < 2 ^ 64) :
     WP isa (.frame (.push r) main (.pop r)) s₀ Q := by
   refine WP.frame hsp (WP.narrowAny (rd := s₀.rd) (wr := s₀.wr) hmain ?_ ?_ ?_ (by omega_using [hn]))
@@ -257,6 +258,7 @@ theorem WP.frameRegAny {r : Reg} {main : Prog isa} {s₀ : State} {Q : State →
       simp only [pushed] at hrd
       subst hrd
       rfl
-    rw [e]; exact hq
+    intro m u f
+    rw [e]; exact hq m u f
 
 end VG.PPC64LE

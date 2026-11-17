@@ -80,7 +80,8 @@ theorem framed {I : Spec.Hmac.Instance} {c : Prog isa} {stack bytes : Nat}
   PPC64LE.Verified.stackScratch (sig := Spec.Pbkdf2.pbkdf2Sig) (nm := "scratch") (e := .u64)
     (n := I.pbkdf2Scratch) (pre := Spec.Pbkdf2.pbkdf2Pre I.S PPC64LE.abi.ptrBits)
     (post := Spec.Pbkdf2.pbkdf2Post I.S PPC64LE.abi.ptrBits) (wa := true) (stack := stack) (bytes := bytes) h
-    (by decide) hb (Pbkdf2.pbkdf2Pre_local I.S _) (Pbkdf2.pbkdf2Post_local I.S _) hsat rfl
+    (by decide) hb (Pbkdf2.pbkdf2Pre_local I.S _) (Pbkdf2.pbkdf2Post_local I.S _)
+    (fun vs m m₁ m₂ r hl _ => Pbkdf2.pbkdf2PostOut_local I.S _ vs m m₁ m₂ r hl) hsat rfl
 
 end VG.Proof.Pbkdf2.Whole.PPC64LE
 

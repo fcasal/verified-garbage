@@ -132,7 +132,7 @@ theorem longScratch : Verified PPC64LE.target hash.initLong (Shared.longScratchC
 theorem initAny : Verified PPC64LE.target (initCode hash Spec.Hmac.sha256I 6)
     (Spec.Hmac.sha256I.initAnyKeyContract PPC64LE.abi (96 + hmacFrame Spec.Hmac.sha256I)) :=
   Shared.initAny (b := 6) (.inl rfl) rfl (by decide)
-    (Shared.initFrame initScratch (by decide) (by
+    (Shared.initFrame initScratch (by decide) Proof.Hmac.sha256_local (by decide) (by
       inst_sat [Spec.Hmac.Instance.initContract, Spec.Hmac.initContract, Spec.Hmac.initSig, Spec.Hmac.initPre,
         Spec.Hmac.sha256I, Spec.Hmac.sha256S, Spec.Hmac.sha256, hmacFrame, PPC64LE.abi, PPC64LE.argRegs]
         using initSat 96 0))

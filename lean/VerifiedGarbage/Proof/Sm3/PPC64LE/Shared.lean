@@ -62,6 +62,7 @@ theorem update : Verified PPC64LE.target
     (stack := 48) (bytes := 192)
     (by rw [← Proof.Sm3.updateScratchContract_eq]; exact updateScratch) (by decide) (by decide)
     (fun _ _ _ _ _ _ => by rw [Curry.apply_const]; trivial) (Proof.Sm3.updatePost_local _)
+    (fun vs m m₁ m₂ r hl _ hb h => Proof.Sm3.updatePostOut_local _ vs m m₁ m₂ r hl hb h)
     (PPC64LE.sat_regs (by decide) (by decide) (by decide +kernel) (by rw [Curry.apply_const]; trivial))
 
 theorem finalize : Verified PPC64LE.target
@@ -71,6 +72,7 @@ theorem finalize : Verified PPC64LE.target
     (stack := 48) (bytes := 192)
     (by rw [← Proof.Sm3.finalizeScratchContract_eq]; exact finalizeScratch) (by decide) (by decide)
     (fun _ _ _ _ _ => by rw [Curry.apply_const]; trivial) (Proof.Sm3.finalizePost_local _)
+    (fun vs m m₁ m₂ r hl _ hb h => Proof.Sm3.finalizePostOut_local _ vs m m₁ m₂ r hl hb h)
     (PPC64LE.sat_regs (by decide) (by decide) (by decide +kernel) (by rw [Curry.apply_const]; trivial))
 
 end VG.Proof.Sm3.PPC64LE.Shared

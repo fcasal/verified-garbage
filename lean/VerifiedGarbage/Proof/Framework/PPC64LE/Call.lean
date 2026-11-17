@@ -14,8 +14,8 @@ callee's `Verified` proof, as `WP.inline` does for inlined code; the callee
 may have calls of its own, but no frames.
 
 A frame (`stdu r1, -48(r1)`; `std rS, 32(r1)` … `ld rT, 32(r1)`; `addi r1,
-r1, 48`) runs its body from `pushed r s` and ends in `popped r' s₂`
-(`WP.frame`). `WP.narrow` runs code without frames that was proven on
+r1, 48`) runs its body from `pushed r s` and ends in `popped r' s₂`, with
+the frame's bytes holding anything (`WP.frame`). `WP.narrow` runs code without frames that was proven on
 narrower permissions, such as the body of a frame proven without the
 frame's region.
 -/
@@ -106,9 +106,14 @@ theorem push_pushed {r : Reg} {s : State} (h : 48 ≤ s.sp.toNat) :
   exact ite_eq_left_of_eq_true _ _ (eq_true h) |>.trans rfl
 
 /-- A frame: its body runs from `pushed r s`, and the pop leads to
-`popped r' s₂`. -/
+`popped r' s₂`, of which the postcondition may rely on nothing the frame's
+bytes hold, nor on the unknowns (as `WP.alloc`'s, `Alloc.lean`): it holds
+whatever memory `m` that differs from the body's only in the frame, and
+whatever unknowns `u`, the state then has. -/
 theorem WP.frame {r r' : Reg} {body : Prog isa} {s : State} {Q : State → Prop}
-    (hsp : 48 ≤ s.sp.toNat) (hb : WP isa body (pushed r s) fun s₂ => Q (popped r' s₂)) :
+    (hsp : 48 ≤ s.sp.toNat)
+    (hb : WP isa body (pushed r s) fun s₂ => ∀ m u, Frame [⟨s.sp - 48, 48⟩] s₂.mem m →
+      Q { popped r' s₂ with mem := m, unknowns := u }) :
     WP isa (.frame (.push r) body (.pop r')) s Q := by
   obtain ⟨t, s₂, he, hq⟩ := hb
   obtain ⟨-, hw, hp⟩ := Exec.rdwr he
@@ -116,7 +121,7 @@ theorem WP.frame {r r' : Reg} {body : Prog isa} {s : State} {Q : State → Prop}
     show pop (.pop r') (pushed r s) s₂ = some (popped r' s₂)
     unfold pop
     exact ite_eq_left_of_eq_true _ _ (eq_true ⟨hp, hw, rfl⟩) |>.trans rfl
-  exact ⟨_, _, Exec.frame (push_pushed hsp) he hpop, hq⟩
+  exact ⟨_, _, Exec.frame (push_pushed hsp) he hpop, hq _ _ (Frame.refl _ _)⟩
 
 /-- Running code without frames that was proven on narrower permissions: if,
 from `s` with its permissions narrowed to `rd` and `wr`, the code terminates
@@ -379,10 +384,13 @@ def framed (r : Reg) (s : State) : State :=
 pointer moved down by 48, the back chain stored there and `r` stored 32
 bytes above it, in the permissions of `s₀` (the frame's region must be
 disjoint from the regions `s₀` may write), and the pop restores `r` and the
-stack pointer. -/
+stack pointer, after which the postcondition holds whatever memory `m` that
+differs from `main`'s only in the frame, and whatever unknowns `u`
+(`WP.frame`). -/
 theorem WP.frameReg {r : Reg} {main : Prog isa} {s₀ : State} {Q : State → Prop}
     (hsp : 48 ≤ s₀.sp.toNat) (hd : ∀ R ∈ s₀.wr, Region.Disjoint ⟨s₀.sp - 48 + 32, 16⟩ R)
-    (hmain : WP isa main (framed r s₀) fun s₂ => Q { s₂.write r (s₀.gpr r) with sp := s₀.sp })
+    (hmain : WP isa main (framed r s₀) fun s₂ => ∀ m u, Frame [⟨s₀.sp - 48, 48⟩] s₂.mem m →
+      Q { s₂.write r (s₀.gpr r) with sp := s₀.sp, mem := m, unknowns := u })
     (hn : 48 * main.fdepth + 48 < 2 ^ 64 := by decide +kernel)
     (hpf : pushFrames main = true := by decide +kernel) :
     WP isa (.frame (.push r) main (.pop r)) s₀ Q := by
@@ -407,6 +415,22 @@ theorem WP.frameReg {r : Reg} {main : Prog isa} {s₀ : State} {Q : State → Pr
       simp only [pushed] at hrd
       subst hrd
       rfl
-    rw [e]; exact hq
+    intro m u f
+    rw [e]; exact hq m u f
+
+/-- `WP.frameReg`, for a postcondition that holds whatever the frame's bytes
+and the unknowns are once it holds of the state the pop leads to (`hQ`):
+one that reads only registers, or memory apart from the frame. -/
+theorem WP.frameRegOf {r : Reg} {main : Prog isa} {s₀ : State} {Q : State → Prop}
+    (hsp : 48 ≤ s₀.sp.toNat) (hd : ∀ R ∈ s₀.wr, Region.Disjoint ⟨s₀.sp - 48 + 32, 16⟩ R)
+    (hmain : WP isa main (framed r s₀) fun s₂ => Q { s₂.write r (s₀.gpr r) with sp := s₀.sp })
+    (hn : 48 * main.fdepth + 48 < 2 ^ 64 := by decide +kernel)
+    (hpf : pushFrames main = true := by decide +kernel)
+    (hQ : ∀ (s₂ : State) m u, Frame [⟨s₀.sp - 48, 48⟩] s₂.mem m →
+      Q { s₂.write r (s₀.gpr r) with sp := s₀.sp } →
+        Q { s₂.write r (s₀.gpr r) with sp := s₀.sp, mem := m, unknowns := u }
+      := by intro _ _ _ _ h; exact h) :
+    WP isa (.frame (.push r) main (.pop r)) s₀ Q :=
+  WP.frameReg hsp hd (WP.mono hmain fun s₂ hq m u f => hQ s₂ m u f hq) hn hpf
 
 end VG.PPC64LE

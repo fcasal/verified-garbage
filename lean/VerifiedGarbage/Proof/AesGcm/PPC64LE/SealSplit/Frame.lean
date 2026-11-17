@@ -36,6 +36,7 @@ theorem framed [VG.Proof.Gcm.PPC64LE.GhashLaw] [VG.Proof.Gcm.PPC64LE.Vpmsum.Fold
   PPC64LE.Verified.stackScratchArgs (sig := Proof.Gcm.sealSplitSig) (nm := "work") (e := .u64) (n := 320)
     (pre := Proof.Gcm.sealSplitPre PPC64LE.abi.ptrBits) (post := Proof.Gcm.sealSplitPost PPC64LE.abi.ptrBits)
     (wa := true) (stack := 112) (bytes := 2688) (m := 3) scratch_verified (by decide) (by decide)
-    (Proof.AesGcm.sealSplitPre_local _) (Proof.AesGcm.sealSplitPost_local _) frameSat_pre
+    (Proof.AesGcm.sealSplitPre_local _) (Proof.AesGcm.sealSplitPost_local _)
+    (fun vs m m₁ m₂ r hl _ => Proof.AesGcm.sealSplitPostOut_local _ vs m m₁ m₂ r hl) frameSat_pre
 
 end VG.Proof.AesGcm.PPC64LE.SealSplit

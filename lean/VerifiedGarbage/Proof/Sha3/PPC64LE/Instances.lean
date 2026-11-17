@@ -275,6 +275,7 @@ theorem xofFinalize_verified {X : Xof} (hX : xofSponge X) (hr : X.rate ∈ rates
     (post := Spec.Sha3.xofFinalizePost X PPC64LE.abi.ptrBits) (wa := true) (stack := 48)
     (bytes := 672) (xofPad_verified hX hr) (by decide) (by decide)
     (VG.Proof.Sha3.Instances.xofFinalizePre_local _ X) (VG.Proof.Sha3.Instances.xofFinalizePost_local _ X)
+    (fun vs m m₁ m₂ r hl _ => VG.Proof.Sha3.Instances.xofFinalizePostOut_local _ X vs m m₁ m₂ r hl)
     ⟨xofFinalizeSat, ?_⟩
   sig_pre [Spec.Sha3.xofFinalizeContract, Spec.Sha3.xofFinalizeSig, Spec.Sha3.xofFinalizePre,
     Spec.Sha3.xofFinalizePost, PPC64LE.abi, PPC64LE.argRegs, xofFinalizeSat, xofPadSat,
@@ -377,6 +378,7 @@ theorem xofSqueeze_verified {X : Xof} (hr : X.rate ∈ rates) :
     (post := Spec.Sha3.xofSqueezePost X PPC64LE.abi.ptrBits) (wa := true) (stack := 48)
     (bytes := 672) (xofSqueezeS_verified hr) (by decide) (by decide)
     (VG.Proof.Sha3.Instances.xofSqueezePre_local _ X) (VG.Proof.Sha3.Instances.xofSqueezePost_local _ X)
+    (fun vs m m₁ m₂ r hl _ => VG.Proof.Sha3.Instances.xofSqueezePostOut_local _ X vs m m₁ m₂ r hl)
     ⟨xofSqueezeTopSat, ?_⟩
   sig_pre [Spec.Sha3.xofSqueezeContract, Spec.Sha3.xofSqueezeSig, Spec.Sha3.xofSqueezePre,
     Spec.Sha3.xofSqueezePost, PPC64LE.abi, PPC64LE.argRegs, xofSqueezeTopSat, xofSqueezeSat,
@@ -858,7 +860,8 @@ theorem finalize_verified {H : Spec.Sha3.HashFn} (hH : hashSponge H) (hr : H.rat
     (post := Spec.Sha3.finalizePost H PPC64LE.abi.ptrBits) (wa := true) (stack := 48)
     (bytes := 704) (finBody_verified hH hr hl hct hsat hsat') (by exact (by decide : 3 < 8))
     (by decide) (VG.Proof.Sha3.Instances.finalizePre_local _ H)
-    (VG.Proof.Sha3.Instances.finalizePost_local _ H) hsat'' rfl
+    (VG.Proof.Sha3.Instances.finalizePost_local _ H)
+    (fun vs m m₁ m₂ r hl _ => VG.Proof.Sha3.Instances.finalizePostOut_local _ H vs m m₁ m₂ r hl) hsat'' rfl
 
 /-- A state satisfying `finPPC64LE`'s precondition. -/
 def finSat (len : Nat) : State :=

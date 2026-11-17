@@ -307,6 +307,8 @@ theorem verify_framed :
     (by decide)
     (fun vs _ m₂ _ _ _ => (congrFun (Curry.apply_const (fun _ : Mem => True)
       (Spec.Ed25519.verifySig.words PPC64LE.abi.ptrBits) vs) m₂).mpr trivial)
-    (Proof.Ed25519.WholeLocal.verifyPost_local _) (Proof.Ed25519.WholeLocal.verifyLeak_local _) verFrameSat_pre
+    (Proof.Ed25519.WholeLocal.verifyPost_local _)
+    (fun vs m m₁ m₂ r hl _ => Proof.Ed25519.WholeLocal.verifyPostOut_local _ vs m m₁ m₂ r hl)
+    (Proof.Ed25519.WholeLocal.verifyLeak_local _) verFrameSat_pre
 
 end VG.Proof.Ed25519.PPC64LE.Whole
