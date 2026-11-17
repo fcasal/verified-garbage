@@ -56,14 +56,14 @@ open VG.Proof.AesGcmSiv.X86_64 (add_ofNat_assoc word_byte)
 base of the working space (the second writable region) and the slots of the
 public arguments `[200, 248)` public. -/
 def sivT (rs : List Reg) : X86_64.Taint.T :=
-  { regs := .ofList (rs ++ [.r13, .r15, .rsp]), flags := false, lens := [0, 488], bases := [(.r15, 1, 0)],
+  { regs := .ofList (rs ++ [.r13, .r15, .rsp]), flags := false, lens := [0, 744], bases := [(.r15, 1, 0)],
     slots := [(1, 200, 48)] }
 
 /-- One run with the public arguments. -/
 structure One (K W SP : Addr) (R : Nat) (N A D : Addr) (al n : Nat) (s : State) : Prop where
   env : Env K W SP s
   sl : Slots W R N A D al n s.mem
-  wr : s.wr = [⟨D, n⟩, ⟨W, 488⟩]
+  wr : s.wr = [⟨D, n⟩, ⟨W, 744⟩]
 
 /-- Two runs with the same public arguments, agreeing on the registers `rs`. -/
 structure Both (K W SP : Addr) (R : Nat) (N A D : Addr) (al n : Nat) (rs : List Reg) (s₁ s₂ : State) :
@@ -73,9 +73,9 @@ structure Both (K W SP : Addr) (R : Nat) (N A D : Addr) (al n : Nat) (rs : List 
   agree : ∀ r ∈ rs, s₁.gpr r = s₂.gpr r
 
 theorem both_agree {K W SP : Addr} {R : Nat} {N A D : Addr} {al n : Nat} {rs : List Reg} {s₁ s₂ : State}
-    (hDW : (⟨D, n⟩ : Region).Disjoint ⟨W, 488⟩) (hn : n ≤ 2 ^ 64)
+    (hDW : (⟨D, n⟩ : Region).Disjoint ⟨W, 744⟩) (hn : n ≤ 2 ^ 64)
     (h : Both K W SP R N A D al n rs s₁ s₂) : X86_64.Taint.Agree (sivT rs) s₁ s₂ := by
-  have wf : ∀ {s : State}, Env K W SP s → s.wr = [⟨D, n⟩, ⟨W, 488⟩] → X86_64.Taint.Wf (sivT rs) s := fun E hw => by
+  have wf : ∀ {s : State}, Env K W SP s → s.wr = [⟨D, n⟩, ⟨W, 744⟩] → X86_64.Taint.Wf (sivT rs) s := fun E hw => by
     refine ⟨fun _ => ⟨?_, ?_, ?_⟩, fun p hp => ?_⟩
     · rw [hw]; exact .cons (Nat.zero_le _) (.cons (Nat.le_refl _) .nil)
     · rw [hw]; exact List.pairwise_pair.mpr hDW
@@ -83,7 +83,7 @@ theorem both_agree {K W SP : Addr} {R : Nat} {N A D : Addr} {al n : Nat} {rs : L
       simp only [List.mem_cons, List.not_mem_nil, or_false] at hr
       rcases hr with rfl | rfl
       · exact hn
-      · show 488 ≤ 2 ^ 64; decide
+      · show 744 ≤ 2 ^ 64; decide
     · simp only [sivT, List.mem_singleton] at hp; subst hp
       simp only [X86_64.Taint.region, hw, List.getD_cons_succ, List.getD_cons_zero]
       rw [E.r15, BitVec.add_zero]
@@ -97,7 +97,7 @@ theorem both_agree {K W SP : Addr} {R : Nat} {N A D : Addr} {al n : Nat} {rs : L
       · rw [h.o₁.env.r15, h.o₂.env.r15]
       · rw [h.o₁.env.rsp, h.o₂.env.rsp]
   · simp only [sivT, List.mem_singleton] at hsl; subst hsl; simp [sivT]
-  · have hb : ∀ s : State, s.wr = [⟨D, n⟩, ⟨W, 488⟩] → X86_64.Taint.byteAddr s 1 k = W + BitVec.ofNat 64 k :=
+  · have hb : ∀ s : State, s.wr = [⟨D, n⟩, ⟨W, 744⟩] → X86_64.Taint.byteAddr s 1 k = W + BitVec.ofNat 64 k :=
       fun s hw => by
         simp only [X86_64.Taint.byteAddr, X86_64.Taint.region, hw, List.getD_cons_succ, List.getD_cons_zero]
     have hw : ∀ d, k = d + (k - d) → W + BitVec.ofNat 64 k = W + BitVec.ofNat 64 d + BitVec.ofNat 64 (k - d) :=
@@ -125,7 +125,7 @@ theorem both_agree {K W SP : Addr} {R : Nat} {N A D : Addr} {al n : Nat} {rs : L
 
 /-- Code the taint analysis checks from `sivT rs`. -/
 theorem rel_taintC {K W SP : Addr} {R : Nat} {N A D : Addr} {al n : Nat} {P : State → State → Prop}
-    {c : Prog isa} (rs : List Reg) (hDW : (⟨D, n⟩ : Region).Disjoint ⟨W, 488⟩) (hn : n ≤ 2 ^ 64)
+    {c : Prog isa} (rs : List Reg) (hDW : (⟨D, n⟩ : Region).Disjoint ⟨W, 744⟩) (hn : n ≤ 2 ^ 64)
     (hP : ∀ s₁ s₂, P s₁ s₂ → Both K W SP R N A D al n rs s₁ s₂)
     (hc : ∃ hc, (taint.check (sivT rs) c hc).isSome = true) : RelCT isa P c fun _ _ => True := by
   obtain ⟨_, hc⟩ := hc
@@ -179,20 +179,6 @@ open VG.Impl.AesGcmSiv.X86_64 (entry recv tagOut restore mask okO bO tagO aadO a
 open VG.Proof.AesGcm.X86_64 (in_off)
 open VG.Proof.AesGcmSiv.X86_64 (rel_taintR)
 
-/-- The slots, after code that writes only parts of `W` apart from them, the
-stack below `SP` and a buffer apart from `W`. -/
-theorem Slots.of_frame {W : Addr} {R : Nat} {N A D : Addr} {al n : Nat} {m m' : Mem}
-    {rs : List Region} (S : Slots W R N A D al n m) (hf : Frame rs m m')
-    (hd : ∀ r ∈ rs, (⟨W + BitVec.ofNat 64 200, 48⟩ : Region).Disjoint r) : Slots W R N A D al n m' := by
-  have k (d : Nat) (hd' : 200 ≤ d ∧ d + 8 ≤ 248) :
-      m'.readW (W + BitVec.ofNat 64 d) 64 = m.readW (W + BitVec.ofNat 64 d) 64 :=
-    hf.readW (Region.contains_self _ _)
-      (fun r hr => (hd r hr).sub_left (Offset.sub W (by omega_arith) (by omega_arith))) (by decide)
-  exact ⟨by rw [k 200 (by decide)]; exact S.rounds, by rw [k 208 (by decide)]; exact S.nonce,
-    by rw [k 216 (by decide)]; exact S.aad, by rw [k 224 (by decide)]; exact S.alen,
-    by rw [k 232 (by decide)]; exact S.data, by rw [k 240 (by decide)]; exact S.len⟩
-
-
 /-- A run with the public arguments and the buffers of the additional data
 and the data. -/
 structure Bufs (K W SP : Addr) (R : Nat) (N A D : Addr) (al n : Nat) (t : State) : Prop where
@@ -205,7 +191,7 @@ apart from what the pieces write, and the tag, which it may read. -/
 structure ArgT (W SP D : Addr) (n : Nat) (T : Addr) (s : State) : Prop where
   val : s.mem.readW (SP + BitVec.ofNat 64 16) 64 = T
   rd : InRegions (s.rd ++ s.wr) (SP + BitVec.ofNat 64 16) 8
-  w : (⟨SP + BitVec.ofNat 64 8, 24⟩ : Region).Disjoint ⟨W, 488⟩
+  w : (⟨SP + BitVec.ofNat 64 8, 24⟩ : Region).Disjoint ⟨W, 744⟩
   d : (⟨SP + BitVec.ofNat 64 8, 24⟩ : Region).Disjoint ⟨D, n⟩
   tb : TagBuf W SP D n T
   trd : Covers [⟨T, 16⟩] (s.rd ++ s.wr)
@@ -246,14 +232,14 @@ theorem derive_st (L : Lay K W SP) (hR : R = 10 ∨ R = 14) {t : State} (h : St 
       simp only [List.mem_singleton] at hq; subst hq; exact L.w_w (.inr (by decide)) (by decide) (by decide))
       (frA (d := 16) (k := 48) (by decide) Dv.frame) Dv.rd Dv.wr
 
-theorem expand_st (L : Lay K W SP) (hR : R = 10 ∨ R = 14) (hret : (⟨SP, 8⟩ : Region).Disjoint ⟨W, 488⟩) {t : State}
+theorem expand_st (L : Lay K W SP) (hR : R = 10 ∨ R = 14) (hret : (⟨SP, 8⟩ : Region).Disjoint ⟨W, 744⟩) {t : State}
     (h : St K W SP R N A D al n T t) : WP isa expand t (St K W SP R N A D al n T) :=
   WP.mono (expand_ok hR hret h.bufs.one.env h.bufs.one.sl) fun _ X =>
     h.frame X.env X.frame (fun q hq => by
       simp only [List.mem_singleton] at hq; subst hq; exact L.w_w (.inl (by decide)) (by decide) (by decide))
       (frC X.frame) X.rd X.wr
 
-theorem keys_st (L : Lay K W SP) (hR : R = 10 ∨ R = 14) (hret : (⟨SP, 8⟩ : Region).Disjoint ⟨W, 488⟩) {t : State}
+theorem keys_st (L : Lay K W SP) (hR : R = 10 ∨ R = 14) (hret : (⟨SP, 8⟩ : Region).Disjoint ⟨W, 744⟩) {t : State}
     (h : St K W SP R N A D al n T t) : WP isa keys t (St K W SP R N A D al n T) :=
   WP.seq (WP.mono (derive_st L hR h) fun _ h => expand_st L hR hret h)
 
@@ -297,8 +283,8 @@ theorem ld_ok {u : State} (Eu : Env K W SP u) {o : Nat} {P : Addr} {k : Nat} (h�
       u'.gpr .r12 = P ∧ u'.gpr .rbp = BitVec.ofNat 64 k ∧ (∀ r, r ≠ .r12 → r ≠ .rbp → u'.gpr r = u.gpr r) ∧
       u'.xmm = u.xmm ∧ u'.mem = u.mem ∧ u'.rd = u.rd ∧ u'.wr = u.wr := by
   have h15 := Eu.r15
-  obtain r₁ := Eu.perm.wR (show o + 8 ≤ 488 by omega_arith)
-  obtain r₂ := Eu.perm.wR (show o + 8 + 8 ≤ 488 by omega_arith)
+  obtain r₁ := Eu.perm.wR (show o + 8 ≤ 744 by omega_arith)
+  obtain r₂ := Eu.perm.wR (show o + 8 + 8 ≤ 744 by omega_arith)
   refine ⟨_, by srun [h15, r₁, r₂], ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · simp only [gpr_setReg, ite_true, ite_false, reduceCtorEq, h15, hP]
   · simp only [gpr_setReg, mem_setReg, ite_true, ite_false, reduceCtorEq, h15, hk]
@@ -361,7 +347,7 @@ theorem polyval_st (F : MulFacts) (L : Lay K W SP) {t : State} (h : St K W SP R 
 
 /-! ## The pieces, in two runs -/
 
-variable (hDW : (⟨D, n⟩ : Region).Disjoint ⟨W, 488⟩) (hn : n ≤ 2 ^ 64)
+variable (hDW : (⟨D, n⟩ : Region).Disjoint ⟨W, 744⟩) (hn : n ≤ 2 ^ 64)
 include hDW hn
 
 /-- A piece the taint analysis checks from `sivT []`, which keeps `St`. -/
@@ -372,7 +358,7 @@ theorem piece_rel {c : Prog isa} (hc : ∃ hc, (taint.check (sivT []) c hc).isSo
   (rel_taintC [] hDW hn (fun _ _ h => ⟨(hP _ _ h).1.bufs.one, (hP _ _ h).2.bufs.one, fun _ h => nomatch h⟩) hc).wp
     fun _ _ h => ⟨hst _ (hP _ _ h).1, hst _ (hP _ _ h).2⟩
 
-theorem keys_rel (L : Lay K W SP) (hR : R = 10 ∨ R = 14) (hret : (⟨SP, 8⟩ : Region).Disjoint ⟨W, 488⟩)
+theorem keys_rel (L : Lay K W SP) (hR : R = 10 ∨ R = 14) (hret : (⟨SP, 8⟩ : Region).Disjoint ⟨W, 744⟩)
     {P : State → State → Prop}
     (hP : ∀ t₁ t₂, P t₁ t₂ → St K W SP R N A D al n T t₁ ∧ St K W SP R N A D al n T t₂) :
     RelCT isa P keys fun t₁ t₂ => True ∧ St K W SP R N A D al n T t₁ ∧ St K W SP R N A D al n T t₂ :=
@@ -557,7 +543,7 @@ theorem rel_loadT {W SP T : Addr} {P : State → State → Prop} {l : List Instr
 
 /-- `s` with the tag read only, and the data and `W` its writable regions. -/
 abbrev narrowT (D : Addr) (n : Nat) (T W : Addr) (s : State) : State :=
-  s.withRegions (s.rd ++ [⟨T, 16⟩]) [⟨D, n⟩, ⟨W, 488⟩]
+  s.withRegions (s.rd ++ [⟨T, 16⟩]) [⟨D, n⟩, ⟨W, 744⟩]
 
 theorem covers_narrowT (rd : List Region) (d t w : Region) :
     Covers (rd ++ [d, t, w]) ((rd ++ [t]) ++ [d, w]) :=
@@ -568,15 +554,15 @@ theorem covers_narrowT (rd : List Region) (d t w : Region) :
 /-- What the entry of `seal` leaves: with the tag read only, a run after the
 entry. -/
 def SealIn (K W SP : Addr) (R : Nat) (N A D : Addr) (al n : Nat) (T : Addr) (s : State) : Prop :=
-  s.wr = [⟨D, n⟩, ⟨T, 16⟩, ⟨W, 488⟩] ∧ St K W SP R N A D al n T (narrowT D n T W s)
+  s.wr = [⟨D, n⟩, ⟨T, 16⟩, ⟨W, 744⟩] ∧ St K W SP R N A D al n T (narrowT D n T W s)
 
 theorem sealIn_of {s s₁ : State} {K W SP N A D T : Addr} {R al n : Nat}
-    (Ar : Args s K W SP N A D R al n) (Tb : TagBuf W SP D n T) (hwr : s.wr = [⟨D, n⟩, ⟨T, 16⟩, ⟨W, 488⟩])
+    (Ar : Args s K W SP N A D R al n) (Tb : TagBuf W SP D n T) (hwr : s.wr = [⟨D, n⟩, ⟨T, 16⟩, ⟨W, 744⟩])
     (h : Env K W SP s₁ ∧ Slots W R N A D al n s₁.mem ∧ s₁.rd = s.rd ∧ s₁.wr = s.wr ∧
       s₁.mem.readW (SP + BitVec.ofNat 64 16) 64 = T ∧ InRegions (s₁.rd ++ s₁.wr) (SP + BitVec.ofNat 64 16) 8) :
     SealIn K W SP R N A D al n T s₁ := by
   obtain ⟨E, S, rd, wr, hT, hTr⟩ := h
-  have hwr₁ : s₁.wr = [⟨D, n⟩, ⟨T, 16⟩, ⟨W, 488⟩] := by rw [wr]; exact hwr
+  have hwr₁ : s₁.wr = [⟨D, n⟩, ⟨T, 16⟩, ⟨W, 744⟩] := by rw [wr]; exact hwr
   have hc : Covers (s₁.rd ++ s₁.wr) ((narrowT D n T W s₁).rd ++ (narrowT D n T W s₁).wr) := by
     rw [hwr₁]; exact covers_narrowT _ _ _ _
   have hb : ∀ {P : Addr} {len : Nat}, Buf K W SP s P len → Buf K W SP (narrowT D n T W s₁) P len := fun hP =>
@@ -605,21 +591,32 @@ theorem entry_seal_pub {s₀ s₀' : State} (hp' : sealPre s₀') (hq : onePub s
 section
 variable {K W SP : Addr} {R : Nat} {N A D T : Addr} {al n : Nat}
 
-/-- `seal` after its entry, up to the copy of the tag. -/
-abbrev sealFront : Prog isa := .seq (.seq (.seq keys polyval) (tag tagO)) crypt
+/-- `seal` after its entry, up to the copy of the tag, with POLYVAL `pv` and
+counter mode `cr`. -/
+abbrev sealFront (pv cr : Prog isa) : Prog isa := .seq (.seq (.seq keys pv) (tag tagO)) cr
 
-theorem sealFront_st (F : MulFacts) (L : Lay K W SP) (hR : R = 10 ∨ R = 14) (hret : (⟨SP, 8⟩ : Region).Disjoint ⟨W, 488⟩)
-    {t : State} (h : St K W SP R N A D al n T t) : WP isa sealFront t (St K W SP R N A D al n T) :=
-  WP.seq (WP.mono (WP.seq (WP.mono (WP.seq (WP.mono (keys_st L hR hret h) fun _ h => polyval_st F L h))
-    fun _ h => tag_st L hR (.inl rfl) h)) fun _ h => crypt_st L hR h)
+theorem sealFront_st {pv cr : Prog isa}
+    (hpv : ∀ t, St K W SP R N A D al n T t → WP isa pv t (St K W SP R N A D al n T))
+    (hcr : ∀ t, St K W SP R N A D al n T t → WP isa cr t (St K W SP R N A D al n T))
+    (L : Lay K W SP) (hR : R = 10 ∨ R = 14) (hret : (⟨SP, 8⟩ : Region).Disjoint ⟨W, 744⟩)
+    {t : State} (h : St K W SP R N A D al n T t) : WP isa (sealFront pv cr) t (St K W SP R N A D al n T) :=
+  WP.seq (WP.mono (WP.seq (WP.mono (WP.seq (WP.mono (keys_st L hR hret h) fun _ h => hpv _ h))
+    fun _ h => tag_st L hR (.inl rfl) h)) fun _ h => hcr _ h)
 
-theorem sealFront_rel (F : MulFacts) (hDW : (⟨D, n⟩ : Region).Disjoint ⟨W, 488⟩) (hn : n ≤ 2 ^ 64) (L : Lay K W SP)
-    (hR : R = 10 ∨ R = 14) (hret : (⟨SP, 8⟩ : Region).Disjoint ⟨W, 488⟩) {P : State → State → Prop}
+theorem sealFront_rel {pv cr : Prog isa}
+    (hpv : ∀ {P : State → State → Prop},
+      (∀ t₁ t₂, P t₁ t₂ → St K W SP R N A D al n T t₁ ∧ St K W SP R N A D al n T t₂) →
+      RelCT isa P pv fun t₁ t₂ => True ∧ St K W SP R N A D al n T t₁ ∧ St K W SP R N A D al n T t₂)
+    (hcr : ∀ {P : State → State → Prop},
+      (∀ t₁ t₂, P t₁ t₂ → St K W SP R N A D al n T t₁ ∧ St K W SP R N A D al n T t₂) →
+      RelCT isa P cr fun t₁ t₂ => True ∧ St K W SP R N A D al n T t₁ ∧ St K W SP R N A D al n T t₂)
+    (hDW : (⟨D, n⟩ : Region).Disjoint ⟨W, 744⟩) (hn : n ≤ 2 ^ 64) (L : Lay K W SP)
+    (hR : R = 10 ∨ R = 14) (hret : (⟨SP, 8⟩ : Region).Disjoint ⟨W, 744⟩) {P : State → State → Prop}
     (hP : ∀ t₁ t₂, P t₁ t₂ → St K W SP R N A D al n T t₁ ∧ St K W SP R N A D al n T t₂) :
-    RelCT isa P sealFront fun t₁ t₂ => True ∧ St K W SP R N A D al n T t₁ ∧ St K W SP R N A D al n T t₂ :=
-  RelCT.seq (RelCT.seq (RelCT.seq (keys_rel hDW hn L hR hret hP) (polyval_rel hDW hn F L fun _ _ h => h.2))
+    RelCT isa P (sealFront pv cr) fun t₁ t₂ => True ∧ St K W SP R N A D al n T t₁ ∧ St K W SP R N A D al n T t₂ :=
+  RelCT.seq (RelCT.seq (RelCT.seq (keys_rel hDW hn L hR hret hP) (hpv fun _ _ h => h.2))
     (piece_rel hDW hn (tag_check 0 (.inl rfl)) (fun _ h => tag_st L hR (.inl rfl) h) fun _ _ h => h.2))
-    (piece_rel hDW hn crypt_check (fun _ h => crypt_st L hR h) fun _ _ h => h.2)
+    (hcr fun _ _ h => h.2)
 
 end
 
@@ -628,44 +625,70 @@ theorem tagOut_check : ∃ hc, (taint.check (Taint.ofRegs [.rcx, .r15]) (.block 
 
 
 /-- `vg_aes_gcm_siv_seal`, in two runs with the same public arguments. -/
-theorem seal_rel (F : MulFacts) {s₀ s₀' : State} (hp : sealPre s₀) (hp' : sealPre s₀') (hq : onePub s₀ s₀') :
-    RelCT isa (fun s₁ s₂ => s₁ = s₀ ∧ s₂ = s₀') Impl.AesGcmSiv.X86_64Reg.seal fun _ _ => True := by
+theorem seal_relG {pv cr : Prog isa}
+    (hpv : ∀ (K W SP : Addr) (R : Nat) (N A D T : Addr) (al n : Nat), Lay K W SP → (R = 10 ∨ R = 14) →
+      ∀ t, St K W SP R N A D al n T t → WP isa pv t (St K W SP R N A D al n T))
+    (hcr : ∀ (K W SP : Addr) (R : Nat) (N A D T : Addr) (al n : Nat), Lay K W SP → (R = 10 ∨ R = 14) →
+      ∀ t, St K W SP R N A D al n T t → WP isa cr t (St K W SP R N A D al n T))
+    (hpvr : ∀ (K W SP : Addr) (R : Nat) (N A D T : Addr) (al n : Nat), (⟨D, n⟩ : Region).Disjoint ⟨W, 744⟩ →
+      n ≤ 2 ^ 64 → Lay K W SP → (R = 10 ∨ R = 14) → ∀ {P : State → State → Prop},
+      (∀ t₁ t₂, P t₁ t₂ → St K W SP R N A D al n T t₁ ∧ St K W SP R N A D al n T t₂) →
+      RelCT isa P pv fun t₁ t₂ => True ∧ St K W SP R N A D al n T t₁ ∧ St K W SP R N A D al n T t₂)
+    (hcrr : ∀ (K W SP : Addr) (R : Nat) (N A D T : Addr) (al n : Nat), (⟨D, n⟩ : Region).Disjoint ⟨W, 744⟩ →
+      n ≤ 2 ^ 64 → Lay K W SP → (R = 10 ∨ R = 14) → ∀ {P : State → State → Prop},
+      (∀ t₁ t₂, P t₁ t₂ → St K W SP R N A D al n T t₁ ∧ St K W SP R N A D al n T t₂) →
+      RelCT isa P cr fun t₁ t₂ => True ∧ St K W SP R N A D al n T t₁ ∧ St K W SP R N A D al n T t₂)
+    {s₀ s₀' : State} (hp : sealPre s₀) (hp' : sealPre s₀') (hq : onePub s₀ s₀') :
+    RelCT isa (fun s₁ s₂ => s₁ = s₀ ∧ s₂ = s₀')
+      (.seq (.block entry) (.seq keys (.seq pv (.seq (tag tagO) (.seq cr (.block (tagOut ++ restore)))))))
+      fun _ _ => True := by
   have Ar := (args_of_seal hp).1.1
   have L := Ar.lay
   refine RelCT.seq (entry_rel (pub_regs hq) (hq.2.2.2.2.2.2.2 2 (by decide)) (argW_in Ar rfl)
     (argW_in (args_of_seal hp').1.1 rfl) (entry_seal hp) (entry_seal_pub hp' hq)) ?_
   refine RelCT.assoc (RelCT.assoc (RelCT.assoc ?_))
   have hn := Nat.le_of_lt Ar.data.lt
-  have front := rel_narrow (c := sealFront)
+  have front := rel_narrow (c := sealFront pv cr)
     (P := fun s₁ s₂ => True ∧
       SealIn (s₀.gpr .rdi) (arg s₀ 2) (s₀.gpr .rsp) (s₀.gpr .rsi).toNat (s₀.gpr .rdx) (s₀.gpr .rcx) (s₀.gpr .r9)
         (s₀.gpr .r8).toNat (arg s₀ 0).toNat (arg s₀ 1) s₁ ∧
       SealIn (s₀.gpr .rdi) (arg s₀ 2) (s₀.gpr .rsp) (s₀.gpr .rsi).toNat (s₀.gpr .rdx) (s₀.gpr .rcx) (s₀.gpr .r9)
         (s₀.gpr .r8).toNat (arg s₀ 0).toNat (arg s₀ 1) s₂)
-    [⟨arg s₀ 1, 16⟩] [⟨s₀.gpr .r9, (arg s₀ 0).toNat⟩, ⟨arg s₀ 2, 488⟩]
-    (sealFront_rel F Ar.data.w hn L Ar.rounds Ar.retW
+    [⟨arg s₀ 1, 16⟩] [⟨s₀.gpr .r9, (arg s₀ 0).toNat⟩, ⟨arg s₀ 2, 744⟩]
+    (sealFront_rel (hpvr _ _ _ _ _ _ _ _ _ _ Ar.data.w hn L Ar.rounds) (hcrr _ _ _ _ _ _ _ _ _ _ Ar.data.w hn L Ar.rounds)
+      Ar.data.w hn L Ar.rounds Ar.retW
       fun _ _ h => by obtain ⟨_, _, hp, rfl, rfl⟩ := h; exact ⟨hp.2.1.2, hp.2.2.2⟩)
     fun s₁ s₂ h => by
-      have hc : ∀ {s : State}, s.wr = [⟨s₀.gpr .r9, (arg s₀ 0).toNat⟩, ⟨arg s₀ 1, 16⟩, ⟨arg s₀ 2, 488⟩] →
-          Covers ([⟨arg s₀ 1, 16⟩] ++ [⟨s₀.gpr .r9, (arg s₀ 0).toNat⟩, ⟨arg s₀ 2, 488⟩]) s.wr ∧
-          Covers [⟨s₀.gpr .r9, (arg s₀ 0).toNat⟩, ⟨arg s₀ 2, 488⟩] s.wr := fun hw => by
+      have hc : ∀ {s : State}, s.wr = [⟨s₀.gpr .r9, (arg s₀ 0).toNat⟩, ⟨arg s₀ 1, 16⟩, ⟨arg s₀ 2, 744⟩] →
+          Covers ([⟨arg s₀ 1, 16⟩] ++ [⟨s₀.gpr .r9, (arg s₀ 0).toNat⟩, ⟨arg s₀ 2, 744⟩]) s.wr ∧
+          Covers [⟨s₀.gpr .r9, (arg s₀ 0).toNat⟩, ⟨arg s₀ 2, 744⟩] s.wr := fun hw => by
         rw [hw]
         refine ⟨Covers.of_mem fun r hr => ?_, Covers.of_mem fun r hr => ?_⟩ <;>
           simp only [List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at hr ⊢ <;>
           rcases hr with h | h | h <;> simp [h]
       obtain ⟨_, ⟨hw₁, p₁⟩, ⟨hw₂, p₂⟩⟩ := h
-      obtain ⟨t₁, u₁, e₁, -⟩ := sealFront_st F L Ar.rounds Ar.retW p₁
-      obtain ⟨t₂, u₂, e₂, -⟩ := sealFront_st F L Ar.rounds Ar.retW p₂
+      obtain ⟨t₁, u₁, e₁, -⟩ := sealFront_st (hpv _ _ _ _ _ _ _ _ _ _ L Ar.rounds) (hcr _ _ _ _ _ _ _ _ _ _ L Ar.rounds)
+        L Ar.rounds Ar.retW p₁
+      obtain ⟨t₂, u₂, e₂, -⟩ := sealFront_st (hpv _ _ _ _ _ _ _ _ _ _ L Ar.rounds) (hcr _ _ _ _ _ _ _ _ _ _ L Ar.rounds)
+        L Ar.rounds Ar.retW p₂
       exact ⟨⟨(hc hw₁).1, (hc hw₁).2, t₁, u₁, e₁⟩, ⟨(hc hw₂).1, (hc hw₂).2, t₂, u₂, e₂⟩⟩
   exact RelCT.seq front (rel_loadT (l := tagOut.tail ++ restore) (fun _ _ h => by
     obtain ⟨_, _, ⟨-, m₁, m₂⟩, ⟨g₁, h₁, c₁⟩, ⟨g₂, h₂, c₂⟩⟩ := h
     exact ⟨m₁.tagIn g₁ h₁ c₁, m₂.tagIn g₂ h₂ c₂⟩) tagOut_check)
 
+/-- `vg_aes_gcm_siv_seal`, in two runs with the same public arguments. -/
+theorem seal_rel (F : MulFacts) {s₀ s₀' : State} (hp : sealPre s₀) (hp' : sealPre s₀') (hq : onePub s₀ s₀') :
+    RelCT isa (fun s₁ s₂ => s₁ = s₀ ∧ s₂ = s₀') Impl.AesGcmSiv.X86_64Reg.seal fun _ _ => True :=
+  seal_relG (fun _ _ _ _ _ _ _ _ _ _ L _ _ h => polyval_st F L h) (fun _ _ _ _ _ _ _ _ _ _ L hR _ h => crypt_st L hR h)
+    (fun _ _ _ _ _ _ _ _ _ _ hDW hn L _ _ hP => polyval_rel hDW hn F L hP)
+    (fun _ _ _ _ _ _ _ _ _ _ hDW hn L hR _ hP => piece_rel hDW hn crypt_check (fun _ h => crypt_st L hR h) hP)
+    hp hp' hq
+
 /-! ## `open` -/
 
 theorem entry_st {s : State} {K W SP N A D T : Addr} {R al n : Nat}
     (Ar : Args s K W SP N A D R al n) (Tb : TagBuf W SP D n T) (hTr : Covers [⟨T, 16⟩] (s.rd ++ s.wr))
-    (hwr : s.wr = [⟨D, n⟩, ⟨W, 488⟩]) (hsp : s.gpr .rsp = SP)
+    (hwr : s.wr = [⟨D, n⟩, ⟨W, 744⟩]) (hsp : s.gpr .rsp = SP)
     (hn : s.mem.readW (SP + BitVec.ofNat 64 8) 64 = BitVec.ofNat 64 n)
     (hT : s.mem.readW (SP + BitVec.ofNat 64 16) 64 = T)
     (hW : s.mem.readW (SP + BitVec.ofNat 64 24) 64 = W)
@@ -746,11 +769,14 @@ theorem mask_st {K W SP : Addr} {R : Nat} {N A D T : Addr} {al n : Nat} {t : Sta
 
 
 /-- `open` after its entry, in two runs. -/
-theorem openBody_rel (F : MulFacts) {K W SP : Addr} (L : Lay K W SP) {R : Nat} (hR : R = 10 ∨ R = 14) {N A D T : Addr}
-    {al n : Nat} (hDW : (⟨D, n⟩ : Region).Disjoint ⟨W, 488⟩) (hn : n ≤ 2 ^ 64)
-    (hret : (⟨SP, 8⟩ : Region).Disjoint ⟨W, 488⟩) {P : State → State → Prop}
+theorem openBody_rel {m₁ m₂ : Prog isa} {K W SP : Addr} (L : Lay K W SP) {R : Nat} (hR : R = 10 ∨ R = 14)
+    {N A D T : Addr} {al n : Nat} (hDW : (⟨D, n⟩ : Region).Disjoint ⟨W, 744⟩) (hn : n ≤ 2 ^ 64)
+    (hret : (⟨SP, 8⟩ : Region).Disjoint ⟨W, 744⟩) {M : State → State → Prop}
+    (hm₁ : RelCT isa (fun t₁ t₂ => True ∧ St K W SP R N A D al n T t₁ ∧ St K W SP R N A D al n T t₂) m₁ M)
+    (hm₂ : RelCT isa M m₂ fun t₁ t₂ => True ∧ St K W SP R N A D al n T t₁ ∧ St K W SP R N A D al n T t₂)
+    {P : State → State → Prop}
     (hP : ∀ t₁ t₂, P t₁ t₂ → St K W SP R N A D al n T t₁ ∧ St K W SP R N A D al n T t₂) :
-    RelCT isa P (.seq (.block recv) (.seq keys (.seq crypt (.seq polyval
+    RelCT isa P (.seq (.block recv) (.seq keys (.seq m₁ (.seq m₂
       (.seq (tag bO) (.seq (.block Impl.AesGcmSiv.X86_64.cmp) (.seq mask
         (.block (([.mov .rax (.mem (at_ .r15 okO))] : List Instr) ++ restore)))))))))
       fun _ _ => True := by
@@ -759,10 +785,6 @@ theorem openBody_rel (F : MulFacts) {K W SP : Addr} (L : Lay K W SP) {R : Nat} (
     (F₁ := St K W SP R N A D al n T) (F₂ := St K W SP R N A D al n T)
     fun t₁ t₂ h => ⟨by rw [← recv_split]; exact recv_st L (hP _ _ h).1, by rw [← recv_split]; exact recv_st L (hP _ _ h).2⟩
   have r₁ := keys_rel hDW hn L hR hret (P := fun t₁ t₂ => True ∧ St K W SP R N A D al n T t₁ ∧
-      St K W SP R N A D al n T t₂) fun _ _ h => h.2
-  have r₂ := piece_rel hDW hn crypt_check (fun _ h => crypt_st L hR h) (P := fun t₁ t₂ => True ∧
-      St K W SP R N A D al n T t₁ ∧ St K W SP R N A D al n T t₂) fun _ _ h => h.2
-  have r₃ := polyval_rel hDW hn F L (P := fun t₁ t₂ => True ∧ St K W SP R N A D al n T t₁ ∧
       St K W SP R N A D al n T t₂) fun _ _ h => h.2
   have r₄ := piece_rel hDW hn (tag_check 128 (.inr rfl)) (fun _ h => tag_st L hR (.inr rfl) h)
     (P := fun t₁ t₂ => True ∧ St K W SP R N A D al n T t₁ ∧ St K W SP R N A D al n T t₂) fun _ _ h => h.2
@@ -777,7 +799,7 @@ theorem openBody_rel (F : MulFacts) {K W SP : Addr} (L : Lay K W SP) {R : Nat} (
   have r₇ := rel_taintC [] (P := fun t₁ t₂ => True ∧ St K W SP R N A D al n T t₁ ∧ St K W SP R N A D al n T t₂)
     hDW hn (fun t₁ t₂ h => ⟨h.2.1.bufs.one, h.2.2.bufs.one, fun _ h => nomatch h⟩) fin_check
   rw [recv_split]
-  exact RelCT.seq r₀ (RelCT.seq r₁ (RelCT.seq r₂ (RelCT.seq r₃ (RelCT.seq r₄ (RelCT.seq r₅ (RelCT.seq r₆ r₇))))))
+  exact RelCT.seq r₀ (RelCT.seq r₁ (RelCT.seq hm₁ (RelCT.seq hm₂ (RelCT.seq r₄ (RelCT.seq r₅ (RelCT.seq r₆ r₇))))))
 
 /-- `vg_aes_gcm_siv_open`, in two runs with the same public arguments. -/
 theorem open_rel (F : MulFacts) {s₀ s₀' : State} (hp : openPre s₀) (hp' : openPre s₀') (hq : onePub s₀ s₀') :
@@ -785,6 +807,8 @@ theorem open_rel (F : MulFacts) {s₀ s₀' : State} (hp : openPre s₀) (hp' : 
   have Ar := (args_of_open hp).1.1
   refine RelCT.seq (entry_rel (pub_regs hq) (hq.2.2.2.2.2.2.2 2 (by decide)) (argW_in Ar rfl)
     (argW_in (args_of_open hp').1.1 rfl) (entry_open hp) (entry_open_pub hp' hq)) ?_
-  exact openBody_rel F Ar.lay Ar.rounds Ar.data.w (Nat.le_of_lt Ar.data.lt) Ar.retW fun _ _ h => ⟨h.2.1, h.2.2⟩
+  exact openBody_rel Ar.lay Ar.rounds Ar.data.w (Nat.le_of_lt Ar.data.lt) Ar.retW
+    (piece_rel Ar.data.w (Nat.le_of_lt Ar.data.lt) crypt_check (fun _ h => crypt_st Ar.lay Ar.rounds h) fun _ _ h => h.2)
+    (polyval_rel Ar.data.w (Nat.le_of_lt Ar.data.lt) F Ar.lay fun _ _ h => h.2) fun _ _ h => ⟨h.2.1, h.2.2⟩
 
 end VG.Proof.AesGcmSivReg.X86_64
