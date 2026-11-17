@@ -35,7 +35,7 @@ namespace VG.Proof.Aes.Arm
 open VG VG.Arm VG.Impl.Aes.Arm
 open VG.Proof.Aes (KeysIn)
 open VG.Proof.Aes.Arm.Ecb (keysIn_frame)
-open VG.Proof.AesOcb.Arm (BlkCall BlkPost blk_frame blk_frame_rel blkRd blkWr encF)
+open VG.Proof.AesOcb.Arm (BlkCall BlkPost blk_frame blk_frame_rel blkRd blkWr encF statesAt_frame)
 open VG.Proof.AesGcm.Arm (below toNat_ofNat32 fA view_gpr arg0 bytesAt_frame)
 open VG.Proof.MdStream.Arm (Upd op2_reg wp_mov)
 
@@ -98,7 +98,13 @@ theorem kblk_call {s : State} {K D S : BitVec 32} {R n : Nat} (h : BlkCall s K D
     WP isa keyedFrame s fun s' => BlkPost encF s K D S R n s' ∧ KeysIn s'.mem S R (schedAt s.mem K R) :=
   blk_frame Ecb.encryptBlocksKeyed_correct keyed_noCalls h (keyedPre h hk)
     fun _ _ hrd hwr hsp hsv hfr hm hpost =>
-      ⟨⟨hrd, hwr, hsp, hsv, hfr, by rw [hm]; exact h.out hpost.1⟩, by rw [hm]; exact keyedPost h hpost.2⟩
+      ⟨⟨hrd, hwr, hsp, hsv, hfr, by
+        rw [statesAt_frame hm (fun r hr => by
+          simp only [List.mem_singleton] at hr; subst hr; exact h.bd.symm)
+          (by have h₁ := h.fitD; have h₂ := toNat_ofNat32 h.n_lt; omega_using [h₁, h₂])]
+        exact h.out hpost.1⟩,
+        keysIn_frame h.fitS (rounds_le h) hm (fun r hr => by
+          simp only [List.mem_singleton] at hr; subst hr; exact h.bs.symm) (keyedPost h hpost.2)⟩
 
 theorem kblk_rel {P : State → State → Prop}
     (h : ∀ s₁ s₂, P s₁ s₂ → ∃ K D S : BitVec 32, ∃ R n : Nat,

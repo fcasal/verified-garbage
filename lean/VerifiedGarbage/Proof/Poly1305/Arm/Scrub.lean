@@ -108,18 +108,26 @@ theorem finalize_armStack (umaal : Bool) :
     armStack (Impl.StackScratch.Arm.withStackScratch 144 1 (Impl.Poly1305.Arm.finalize umaal)) ≤ 144 := by
   cases umaal <;> lit_decide
 
+theorem update_noIcall (umaal : Bool) :
+    noIcall (Impl.StackScratch.Arm.withStackScratch 144 2 (Impl.Poly1305.Arm.update umaal)) = true := by
+  cases umaal <;> lit_decide
+
 def updateReg (umaal : Bool) (suffix : String) : Registration Spec.Poly1305.updateApi target :=
   Arm.Scrub.scrubRegF {
       suffix := suffix
       code := Impl.StackScratch.Arm.withStackScratch 144 2 (Impl.Poly1305.Arm.update umaal)
       verified := update_framed }
-    (update_armStack umaal) frameOk_144 (updateOut _) rfl
+    (update_armStack umaal) (update_noIcall umaal) frameOk_144 (updateOut _) rfl
+
+theorem finalize_noIcall (umaal : Bool) :
+    noIcall (Impl.StackScratch.Arm.withStackScratch 144 1 (Impl.Poly1305.Arm.finalize umaal)) = true := by
+  cases umaal <;> lit_decide
 
 def finalizeReg (umaal : Bool) (suffix : String) : Registration Spec.Poly1305.finalizeApi target :=
   Arm.Scrub.scrubRegF {
       suffix := suffix
       code := Impl.StackScratch.Arm.withStackScratch 144 1 (Impl.Poly1305.Arm.finalize umaal)
       verified := finalize_framed }
-    (finalize_armStack umaal) frameOk_144 (finalizeOut _) rfl
+    (finalize_armStack umaal) (finalize_noIcall umaal) frameOk_144 (finalizeOut _) rfl
 
 end VG.Proof.Poly1305.Arm.Scrub

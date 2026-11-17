@@ -166,11 +166,15 @@ theorem gather_armStack (umaal : Bool) :
 /-- `seal_gather`, calling `seal` with either arithmetic of Poly1305, followed
 by a wipe of the stack its contract reserves, and by instructions that set
 the registers a callee may change and the flags to constants. -/
+theorem gather_noIcall (umaal : Bool) :
+    VG.Arm.noIcall (sealGather (sealFn umaal).name (sealFn umaal).code) = true := by
+  cases umaal <;> lit_decide
+
 def gatherReg (umaal : Bool) (suffix : String) : Registration Spec.ChaCha20Poly1305.sealGatherApi Arm.target :=
   VG.Arm.Scrub.scrubRegF {
       suffix := suffix
       code := sealGather (sealFn umaal).name (sealFn umaal).code
       verified := sealGather_verified (sealFn umaal) }
-    (gather_armStack umaal) frameOk_696 (gatherOut _) rfl
+    (gather_armStack umaal) (gather_noIcall umaal) frameOk_696 (gatherOut _) rfl
 
 end VG.Proof.ChaCha20Poly1305.Arm.Gather

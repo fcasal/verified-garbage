@@ -37,6 +37,7 @@ public import VerifiedGarbage.Proof.Ffdh.Arm.KeySearch.LoopState
 import VerifiedGarbage.Proof.Framework.Omega
 public import VerifiedGarbage.Proof.Ffdh.Arm.KeySearch.Exit
 import VerifiedGarbage.Proof.Ffdh.Arm.KeySearch.Live
+import VerifiedGarbage.Proof.Framework.Arm.Frame
 
 /-! ### `Ffdh.Arm.KeySearch.Correct`, which only this module used -/
 

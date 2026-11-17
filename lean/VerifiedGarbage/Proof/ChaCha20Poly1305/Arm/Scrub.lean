@@ -99,26 +99,38 @@ theorem openTo_armStack (umaal : Bool) :
     armStack (Impl.StackScratch.Arm.withStackScratchWiped 664 5 158 (openTo umaal)) ≤ 672 := by
   cases umaal <;> lit_decide
 
+theorem seal_noIcall (umaal : Bool) :
+    noIcall (Impl.StackScratch.Arm.withStackScratchWiped 656 3 158 («seal» umaal)) = true := by
+  cases umaal <;> lit_decide
+
 def sealReg (umaal : Bool) (suffix : String) : Registration Spec.ChaCha20Poly1305.sealApi target :=
   Arm.Scrub.scrubRegF {
       suffix := suffix
       code := Impl.StackScratch.Arm.withStackScratchWiped 656 3 158 («seal» umaal)
       verified := seal_framed }
-    (seal_armStack umaal) frameOk_664 (sealOut _) rfl
+    (seal_armStack umaal) (seal_noIcall umaal) frameOk_664 (sealOut _) rfl
+
+theorem open_noIcall (umaal : Bool) :
+    noIcall (Impl.StackScratch.Arm.withStackScratchWiped 656 3 158 («open» umaal)) = true := by
+  cases umaal <;> lit_decide
 
 def openReg (umaal : Bool) (suffix : String) : Registration Spec.ChaCha20Poly1305.openZeroApi target :=
   Arm.Scrub.scrubRegF {
       suffix := suffix
       code := Impl.StackScratch.Arm.withStackScratchWiped 656 3 158 («open» umaal)
       verified := open_framed }
-    (open_armStack umaal) frameOk_664 (openOut _) rfl
+    (open_armStack umaal) (open_noIcall umaal) frameOk_664 (openOut _) rfl
+
+theorem openTo_noIcall (umaal : Bool) :
+    noIcall (Impl.StackScratch.Arm.withStackScratchWiped 664 5 158 (openTo umaal)) = true := by
+  cases umaal <;> lit_decide
 
 def openToReg (umaal : Bool) (suffix : String) : Registration Spec.ChaCha20Poly1305.openToApi target :=
   Arm.Scrub.scrubRegF {
       suffix := suffix
       code := Impl.StackScratch.Arm.withStackScratchWiped 664 5 158 (openTo umaal)
       verified := openTo_framed }
-    (openTo_armStack umaal) frameOk_672 (openToOut _) rfl
+    (openTo_armStack umaal) (openTo_noIcall umaal) frameOk_672 (openToOut _) rfl
 
 /-! ## `seal`, as `seal_gather` calls it -/
 
