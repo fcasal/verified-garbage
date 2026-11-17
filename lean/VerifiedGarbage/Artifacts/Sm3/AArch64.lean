@@ -1,6 +1,7 @@
 module
 
 public import VerifiedGarbage.Proof.Sm3.AArch64.Shared
+public import VerifiedGarbage.Proof.Sm3.AArch64.Stream.Init
 public import VerifiedGarbage.Proof.Variants.Sm3Compress.AArch64
 public import VerifiedGarbage.Proof.Framework.Registration
 public import VerifiedGarbage.TCB.AArch64.Print
@@ -14,7 +15,8 @@ namespace VG.Artifacts.Sm3.AArch64
 def artifacts : List Artifact := [
   Spec.Sm3.initApi.artifact AArch64.target {
     code := Impl.Sm3.AArch64.Stream.init
-    verified := Proof.Sm3.AArch64.Shared.init }] ++
+    verified := Proof.Sm3.AArch64.Shared.init
+    residue := some ⟨Proof.Sm3.AArch64.Stream.init_noResidue _ _⟩ }] ++
   (Proof.Variants.Sm3Compress.AArch64.variants.flatMap fun (v : Proof.Sm3.AArch64.Compress) => [
     Spec.Sm3.updateApi.artifact AArch64.target {
       code := Impl.StackScratch.AArch64.withStackScratch 112 .x4 v.update

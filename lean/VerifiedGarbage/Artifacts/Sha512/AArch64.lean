@@ -1,6 +1,7 @@
 module
 
 public import VerifiedGarbage.Proof.Sha512.AArch64.Shared
+public import VerifiedGarbage.Proof.Sha512.AArch64.Stream.Init
 public import VerifiedGarbage.Proof.Sha512.AArch64.Sha3.Compress
 public import VerifiedGarbage.Proof.Framework.Registration
 public import VerifiedGarbage.TCB.AArch64.Print
@@ -16,16 +17,20 @@ namespace VG.Artifacts.Sha512.AArch64
 def artifacts : List Artifact := [
   Spec.Sha512.init384Api.artifact AArch64.target {
     code := Impl.Sha512.AArch64.Stream.init Spec.Sha512.H0_384
-    verified := Proof.Sha512.AArch64.Shared.init Spec.Sha512.H0_384 },
+    verified := Proof.Sha512.AArch64.Shared.init Spec.Sha512.H0_384
+    residue := some ⟨Proof.Sha512.AArch64.Stream.init_noResidue _ _ _⟩ },
   Spec.Sha512.init512Api.artifact AArch64.target {
     code := Impl.Sha512.AArch64.Stream.init Spec.Sha512.H0_512
-    verified := Proof.Sha512.AArch64.Shared.init Spec.Sha512.H0_512 },
+    verified := Proof.Sha512.AArch64.Shared.init Spec.Sha512.H0_512
+    residue := some ⟨Proof.Sha512.AArch64.Stream.init_noResidue _ _ _⟩ },
   Spec.Sha512.init512_224Api.artifact AArch64.target {
     code := Impl.Sha512.AArch64.Stream.init Spec.Sha512.H0_512_224
-    verified := Proof.Sha512.AArch64.Shared.init Spec.Sha512.H0_512_224 },
+    verified := Proof.Sha512.AArch64.Shared.init Spec.Sha512.H0_512_224
+    residue := some ⟨Proof.Sha512.AArch64.Stream.init_noResidue _ _ _⟩ },
   Spec.Sha512.init512_256Api.artifact AArch64.target {
     code := Impl.Sha512.AArch64.Stream.init Spec.Sha512.H0_512_256
-    verified := Proof.Sha512.AArch64.Shared.init Spec.Sha512.H0_512_256 }] ++
+    verified := Proof.Sha512.AArch64.Shared.init Spec.Sha512.H0_512_256
+    residue := some ⟨Proof.Sha512.AArch64.Stream.init_noResidue _ _ _⟩ }] ++
   ((VG.Proof.Variants.MdHash.AArch64.sha384Variants ++
       VG.Proof.Variants.MdHash.AArch64.sha512Variants ++
       VG.Proof.Variants.MdHash.AArch64.sha512_224Variants ++

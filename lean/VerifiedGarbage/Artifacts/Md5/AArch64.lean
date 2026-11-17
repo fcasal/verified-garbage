@@ -1,6 +1,7 @@
 module
 
 public import VerifiedGarbage.Proof.Md5.AArch64.Shared
+public import VerifiedGarbage.Proof.Md5.AArch64.Stream.Init
 public import VerifiedGarbage.Proof.Framework.Registration
 public import VerifiedGarbage.TCB.AArch64.Print
 public import VerifiedGarbage.Proof.Pbkdf2.Md.AArch64.Variant
@@ -15,7 +16,8 @@ namespace VG.Artifacts.Md5.AArch64
 def artifacts : List Artifact := [
   Spec.Md5.initApi.artifact AArch64.target {
     code := Impl.Md5.AArch64.Stream.init
-    verified := Proof.Md5.AArch64.Shared.init },
+    verified := Proof.Md5.AArch64.Shared.init
+    residue := some ⟨Proof.Md5.AArch64.Stream.init_noResidue _ _⟩ },
   Spec.Md5.updateApi.artifact AArch64.target {
     code := Impl.StackScratch.AArch64.withStackScratch 112 .x4 Impl.Md5.AArch64.Stream.update
     verified := Proof.Md5.AArch64.Shared.update },
