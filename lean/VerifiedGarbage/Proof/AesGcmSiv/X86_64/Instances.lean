@@ -6,6 +6,7 @@ import VerifiedGarbage.Proof.AesGcmSiv.X86_64.FnCT
 import VerifiedGarbage.Proof.AesGcmSiv.X86_64.Fn
 public import VerifiedGarbage.Proof.Framework.Contract
 import VerifiedGarbage.Proof.GcmSiv.Polyval
+import VerifiedGarbage.Proof.Gcm.X86_64.Pclmul.Ghash
 public import VerifiedGarbage.Proof.AesGcmSiv.Scratch
 public import Aesop.BuiltinRules
 public import VerifiedGarbage.Impl.AesGcmSiv.X86_64
@@ -18,6 +19,7 @@ import VerifiedGarbage.Proof.AesGcmSiv.X86_64.Stitch.SealCT
 public import VerifiedGarbage.Proof.AesGcmSiv.X86_64.Stitch.VaesLoops
 public import VerifiedGarbage.Proof.AesGcmSiv.X86_64.StitchAvx
 public import VerifiedGarbage.Impl.AesGcmSiv.X86_64Stitch
+public import VerifiedGarbage.Proof.AesGcmSiv.X86_64.Reg.Verified
 import Mathlib.Algebra.Field.ZMod
 import Mathlib.RingTheory.AdjoinRoot
 import VerifiedGarbage.Proof.Framework.EntryBranch
@@ -791,40 +793,147 @@ theorem open_bySize {wide narrow : Prog isa}
     exact ⟨by simpa [List.getD, List.range, List.range.loop] using h6, h8, hsp⟩
 
 
+/-- Whether `v`'s `seal` and `open` run the code in registers
+(`Impl.AesGcmSiv.X86_64Reg`), which needs AES-NI and PCLMULQDQ: with them in
+`v`'s callees. -/
+def sivReg (v : GcmImpl) : Bool :=
+  v.ctr.features.contains "aes" && (v.gh.features.contains "pclmulqdq" || v.gh.features.contains "vpclmulqdq")
+
+/-- `seal` in registers, in the frame of the other code. -/
+abbrev regSeal : Prog isa := Impl.StackScratch.X86_64.withStackArgScratch 3848 2 Impl.AesGcmSiv.X86_64Reg.seal
+
+/-- `open` in registers, in the frame of the other code. -/
+abbrev regOpen : Prog isa := Impl.StackScratch.X86_64.withStackArgScratch 3848 2 Impl.AesGcmSiv.X86_64Reg.open
+
+theorem regSeal_spSafe : regSeal.all (fun i => !X86_64.isa.writesSp i) = true :=
+  X86_64.withStackArgScratch_spSafe Proof.AesGcmSivReg.X86_64.seal_spSafe
+
+theorem regOpen_spSafe : regOpen.all (fun i => !X86_64.isa.writesSp i) = true :=
+  X86_64.withStackArgScratch_spSafe Proof.AesGcmSivReg.X86_64.open_spSafe
+
+/-- `v`'s `seal` below 128 bytes of text and of additional data: in
+registers where `v` has the instructions (`sivReg`), which is faster there. -/
+def shortSeal (v : GcmImpl) : Prog isa :=
+  if sivReg v then regSeal else Impl.StackScratch.X86_64.withStackArgScratch 3848 2 (sealCode v)
+
+def shortOpen (v : GcmImpl) : Prog isa :=
+  if sivReg v then regOpen else Impl.StackScratch.X86_64.withStackArgScratch 3848 2 (openCode v)
+
+open VG.Proof.Gcm.Poly (φ x) in
+/-- GHASH's field for the code in registers (`Proof.AesGcmSivReg.X86_64.MulFacts`),
+whose proofs do not import its algebra. -/
+private def mulFacts : Proof.AesGcmSivReg.X86_64.MulFacts where
+  G H T := x * φ T = φ H
+  P2 H T := x * φ T = φ H ^ 2
+  P3 H T := x * φ T = φ H ^ 3
+  P4 H T := x * φ T = φ H ^ 4
+  step1 := fun H Y X₁ T₁ h => Proof.Gcm.X86_64.Pclmul.step1 H Y X₁ T₁ h
+  step4 := fun H Y X₁ X₂ X₃ X₄ T₁ T₂ T₃ T₄ h₁ h₂ h₃ h₄ =>
+    Proof.Gcm.X86_64.Pclmul.step4 H Y X₁ X₂ X₃ X₄ T₁ T₂ T₃ T₄ h₁ h₂ h₃ h₄
+  inv := Proof.Gcm.X86_64.Pclmul.hInvImm_ok
+  pows := fun _ s h1 hH => Proof.Gcm.X86_64.Pclmul.pows_ok s h1 hH
+  pv := GcmSiv.Polyval.polyvalFrom_eq
+
+theorem shortSeal_verified (v : GcmImpl) :
+    Verified X86_64.target (shortSeal v) (Proof.AesGcmSiv.sealRoundsContract X86_64.abi 3856) := by
+  unfold shortSeal
+  split
+  · exact Proof.AesGcmSivReg.X86_64.seal_framedL mulFacts
+  · exact sealCode_framed v
+
+theorem shortOpen_verified (v : GcmImpl) :
+    Verified X86_64.target (shortOpen v) (Proof.AesGcmSiv.openRoundsContract X86_64.abi 3856) := by
+  unfold shortOpen
+  split
+  · exact Proof.AesGcmSivReg.X86_64.open_framedL mulFacts
+  · exact openCode_framed v
+
+theorem shortSeal_spSafe (v : GcmImpl) : (shortSeal v).all (fun i => !X86_64.isa.writesSp i) = true := by
+  unfold shortSeal
+  split
+  · exact regSeal_spSafe
+  · exact X86_64.withStackArgScratch_spSafe (sealCode_spSafe v)
+
+theorem shortOpen_spSafe (v : GcmImpl) : (shortOpen v).all (fun i => !X86_64.isa.writesSp i) = true := by
+  unfold shortOpen
+  split
+  · exact regOpen_spSafe
+  · exact X86_64.withStackArgScratch_spSafe (openCode_spSafe v)
+
+/-- The code of `v`'s `seal`, in its frame: where it interleaves counter
+mode and POLYVAL (`loopsOf`), by the lengths, with `shortSeal` below 128
+bytes, where it does not interleave; `shortSeal` otherwise. -/
+def framedSeal (v : GcmImpl) : Prog isa :=
+  if (loopsOf v).isSome then bySize (Impl.StackScratch.X86_64.withStackArgScratch 3848 2 (sealCode v)) (shortSeal v)
+  else shortSeal v
+
+/-- `open`'s, as `framedSeal`. -/
+def framedOpen (v : GcmImpl) : Prog isa :=
+  if (loopsOf v).isSome then bySize (Impl.StackScratch.X86_64.withStackArgScratch 3848 2 (openCode v)) (shortOpen v)
+  else shortOpen v
+
+theorem framedSeal_verified (v : GcmImpl) :
+    Verified X86_64.target (framedSeal v) (Proof.AesGcmSiv.sealRoundsContract X86_64.abi 3856) := by
+  unfold framedSeal
+  split
+  · exact seal_bySize (sealCode_framed v) (shortSeal_verified v)
+  · exact shortSeal_verified v
+
+theorem framedOpen_verified (v : GcmImpl) :
+    Verified X86_64.target (framedOpen v) (Proof.AesGcmSiv.openRoundsContract X86_64.abi 3856) := by
+  unfold framedOpen
+  split
+  · exact open_bySize (openCode_framed v) (shortOpen_verified v)
+  · exact shortOpen_verified v
+
+theorem framedSeal_spSafe (v : GcmImpl) : (framedSeal v).all (fun i => !X86_64.isa.writesSp i) = true := by
+  unfold framedSeal
+  split
+  · simp only [bySize, Code.iteCold, Code.all, X86_64.withStackArgScratch_spSafe (sealCode_spSafe v),
+      shortSeal_spSafe v, Bool.and_true]
+    rfl
+  · exact shortSeal_spSafe v
+
+theorem framedOpen_spSafe (v : GcmImpl) : (framedOpen v).all (fun i => !X86_64.isa.writesSp i) = true := by
+  unfold framedOpen
+  split
+  · simp only [bySize, Code.iteCold, Code.all, X86_64.withStackArgScratch_spSafe (openCode_spSafe v),
+      shortOpen_spSafe v, Bool.and_true]
+    rfl
+  · exact shortOpen_spSafe v
+
 /-- The code of `v`'s `seal` with the AVX2 copies (its `_avx2` instance):
 when `v`'s code does not take them already (`sivWide`), by the lengths,
-with the code without them below 128 bytes, where the copies are not used. -/
+with `shortSeal` below 128 bytes, where the copies are not used. -/
 def avx2SealCode (v : GcmImpl) : Prog isa :=
   if sivWide v then Impl.StackScratch.X86_64.withStackArgScratch 3848 2 (wideSealCode v)
-  else bySize (Impl.StackScratch.X86_64.withStackArgScratch 3848 2 (wideSealCode v))
-    (Impl.StackScratch.X86_64.withStackArgScratch 3848 2 (sealCode v))
+  else bySize (Impl.StackScratch.X86_64.withStackArgScratch 3848 2 (wideSealCode v)) (shortSeal v)
 
 /-- `open`'s, as `avx2SealCode`. -/
 def avx2OpenCode (v : GcmImpl) : Prog isa :=
   if sivWide v then Impl.StackScratch.X86_64.withStackArgScratch 3848 2 (wideOpenCode v)
-  else bySize (Impl.StackScratch.X86_64.withStackArgScratch 3848 2 (wideOpenCode v))
-    (Impl.StackScratch.X86_64.withStackArgScratch 3848 2 (openCode v))
+  else bySize (Impl.StackScratch.X86_64.withStackArgScratch 3848 2 (wideOpenCode v)) (shortOpen v)
 
 theorem avx2Seal_verified (v : GcmImpl) :
     Verified X86_64.target (avx2SealCode v) (Proof.AesGcmSiv.sealRoundsContract X86_64.abi 3856) := by
   unfold avx2SealCode
   split
   · exact wideSeal_framed v
-  · exact seal_bySize (wideSeal_framed v) (sealCode_framed v)
+  · exact seal_bySize (wideSeal_framed v) (shortSeal_verified v)
 
 theorem avx2Open_verified (v : GcmImpl) :
     Verified X86_64.target (avx2OpenCode v) (Proof.AesGcmSiv.openRoundsContract X86_64.abi 3856) := by
   unfold avx2OpenCode
   split
   · exact wideOpen_framed v
-  · exact open_bySize (wideOpen_framed v) (openCode_framed v)
+  · exact open_bySize (wideOpen_framed v) (shortOpen_verified v)
 
 theorem avx2Seal_spSafe (v : GcmImpl) : (avx2SealCode v).all (fun i => !X86_64.isa.writesSp i) = true := by
   unfold avx2SealCode
   split
   · exact X86_64.withStackArgScratch_spSafe (wideSeal_spSafe v)
   · simp only [bySize, Code.iteCold, Code.all, X86_64.withStackArgScratch_spSafe (wideSeal_spSafe v),
-      X86_64.withStackArgScratch_spSafe (sealCode_spSafe v), Bool.and_true]
+      shortSeal_spSafe v, Bool.and_true]
     rfl
 
 theorem avx2Open_spSafe (v : GcmImpl) : (avx2OpenCode v).all (fun i => !X86_64.isa.writesSp i) = true := by
@@ -832,7 +941,7 @@ theorem avx2Open_spSafe (v : GcmImpl) : (avx2OpenCode v).all (fun i => !X86_64.i
   split
   · exact X86_64.withStackArgScratch_spSafe (wideOpen_spSafe v)
   · simp only [bySize, Code.iteCold, Code.all, X86_64.withStackArgScratch_spSafe (wideOpen_spSafe v),
-      X86_64.withStackArgScratch_spSafe (openCode_spSafe v), Bool.and_true]
+      shortOpen_spSafe v, Bool.and_true]
     rfl
 
 end
@@ -893,19 +1002,19 @@ def scrubSoft {api : Api} (v : GcmImpl) (r : Registration api X86_64.target)
 def sealReg (v : GcmImpl) : Registration Spec.GcmSiv.sealApi X86_64.target :=
   scrubSoft v {
     suffix := v.suffix
-    code := Impl.StackScratch.X86_64.withStackArgScratch 3848 2 (sealCode v)
+    code := framedSeal v
     stack := 3856
-    verified := Proof.AesGcmSiv.seal_keyed (sealCode_framed v)
-    spSafe := X86_64.withStackArgScratch_spSafe (sealCode_spSafe v) } (sealOut _)
+    verified := Proof.AesGcmSiv.seal_keyed (framedSeal_verified v)
+    spSafe := framedSeal_spSafe v } (sealOut _)
 
 /-- `vg_aes_gcm_siv_open` over `v`. -/
 def openReg (v : GcmImpl) : Registration Spec.GcmSiv.openApi X86_64.target :=
   scrubSoft v {
     suffix := v.suffix
-    code := Impl.StackScratch.X86_64.withStackArgScratch 3848 2 (openCode v)
+    code := framedOpen v
     stack := 3856
-    verified := Proof.AesGcmSiv.open_keyed (openCode_framed v)
-    spSafe := X86_64.withStackArgScratch_spSafe (openCode_spSafe v) } (openOut _)
+    verified := Proof.AesGcmSiv.open_keyed (framedOpen_verified v)
+    spSafe := framedOpen_spSafe v } (openOut _)
 
 /-- `vg_aes_gcm_siv_seal` over `v`, with the AVX2 copies. -/
 def wideSealReg (v : GcmImpl) : Registration Spec.GcmSiv.sealApi X86_64.target :=
