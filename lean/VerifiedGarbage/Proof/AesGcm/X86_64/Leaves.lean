@@ -1178,7 +1178,7 @@ addresses and stack argument (`streamEncryptClrB_below`), and in it what
 `streamFV` says of their entry (`streamEncryptClrB_leaves`), which depends
 on no secret. -/
 theorem streamEncBZ_agree (lv : Impl.Scrub.X86_64.VecLevel) (v : GcmImpl) (B : BlkFn CtxMode.base)
-    (gf : GhashFree v.gh.fn.code) {sc : Nat} {z : Nat → Bool} (hsc : sc ≤ 2048)
+    {zg : Nat → Bool} (GZ : GhCallZ (v.wrapC lv) zg) {sc : Nat} {z : Nat → Bool} (hsc : sc ≤ 2048)
     (CZ : CrCallZ (v.wrapC lv) sc z) (hB : BlkLeaves B)
     (hct : Plain v.callees.ctr.code) (hgh : Plain v.callees.gh.code) (hn : UpperLock.inames B.enc.code = [])
     {s₁ s₂ : State}
@@ -1206,15 +1206,15 @@ theorem streamEncBZ_agree (lv : Impl.Scrub.X86_64.VecLevel) (v : GcmImpl) (B : B
   by_cases hb : (below (s₁.gpr .rsp - BitVec.ofNat 64 2584) 24).Contains x 1
   · exact streamEncryptClrB_below lv v B hct hgh hn hn₁ hn₂ (streamEnc_narrowPub hp) hrsp hbm hu e₁' e₂' x hb
   · have hx' := frame_or_below hx hb
-    rw [streamEncryptClrB_leavesZ lv v gf B hsc CZ hL hn₁ e₁' x hx',
-      streamEncryptClrB_leavesZ lv v gf B hsc CZ hL hn₂ e₂' x (by have h := hx'; rw [hrsp] at h; exact h),
-      streamFVZ_congr z Lb (s₁ := narrow32 s₁) (s₂ := narrow32 s₂) hg (streamLen_pub (s₁ := s₁) (s₂ := s₂) hp)]
+    rw [streamEncryptClrB_leavesZ lv v B GZ hsc CZ hL hn₁ e₁' x hx',
+      streamEncryptClrB_leavesZ lv v B GZ hsc CZ hL hn₂ e₂' x (by have h := hx'; rw [hrsp] at h; exact h),
+      streamFVZ_congr z zg Lb (s₁ := narrow32 s₁) (s₂ := narrow32 s₂) hg (streamLen_pub (s₁ := s₁) (s₂ := s₂) hp)]
     exact congrArg (Option.getD _) (hbm x hx)
 
 open StackLock in
 /-- `streamEncBZ_agree` for `vg_aes_gcm_stream_decrypt_prepared`. -/
 theorem streamDecBZ_agree (lv : Impl.Scrub.X86_64.VecLevel) (v : GcmImpl) (B : BlkFn CtxMode.base)
-    (gf : GhashFree v.gh.fn.code) {sc : Nat} {z : Nat → Bool} (hsc : sc ≤ 2048)
+    {zg : Nat → Bool} (GZ : GhCallZ (v.wrapC lv) zg) {sc : Nat} {z : Nat → Bool} (hsc : sc ≤ 2048)
     (CZ : CrCallZ (v.wrapC lv) sc z) (hB : BlkLeavesD B)
     (hct : Plain v.callees.ctr.code) (hgh : Plain v.callees.gh.code) (hn : UpperLock.inames B.dec.code = [])
     {s₁ s₂ : State}
@@ -1242,9 +1242,9 @@ theorem streamDecBZ_agree (lv : Impl.Scrub.X86_64.VecLevel) (v : GcmImpl) (B : B
   by_cases hb : (below (s₁.gpr .rsp - BitVec.ofNat 64 2584) 24).Contains x 1
   · exact streamDecryptClrB_below lv v B hct hgh hn hn₁ hn₂ (streamDec_narrowPub hp) hrsp hbm hu e₁' e₂' x hb
   · have hx' := frame_or_below hx hb
-    rw [streamDecryptClrB_leavesZ lv v gf B hsc CZ hL hn₁ e₁' x hx',
-      streamDecryptClrB_leavesZ lv v gf B hsc CZ hL hn₂ e₂' x (by have h := hx'; rw [hrsp] at h; exact h),
-      streamFVZ_congr z Lb (s₁ := narrow32 s₁) (s₂ := narrow32 s₂) hg (streamLen_pub (s₁ := s₁) (s₂ := s₂) hp)]
+    rw [streamDecryptClrB_leavesZ lv v B GZ hsc CZ hL hn₁ e₁' x hx',
+      streamDecryptClrB_leavesZ lv v B GZ hsc CZ hL hn₂ e₂' x (by have h := hx'; rw [hrsp] at h; exact h),
+      streamFVZ_congr z zg Lb (s₁ := narrow32 s₁) (s₂ := narrow32 s₂) hg (streamLen_pub (s₁ := s₁) (s₂ := s₂) hp)]
     exact congrArg (Option.getD _) (hbm x hx)
 
 open StackLock in
@@ -2953,7 +2953,8 @@ theorem pclmulW_crCallZ (f : VG.Proof.Aes.X86_64.Ctr32Small pclmulV.impl.ctr.cal
   crCallZ_wipeC .sse _ (c₀ := pclmulV.impl.ctr.callee.code) rfl h9 ((f.wipe h9).wrapC .sse)
 
 open StackLock in
-theorem streamEncryptWZ_resOk (v : GcmImpl) (B : BlkFn CtxMode.base) (gf : GhashFree v.gh.fn.code) {sc : Nat}
+theorem streamEncryptWZ_resOk (v : GcmImpl) (B : BlkFn CtxMode.base) {zg : Nat → Bool} (GZ : GhCallZ (v.wrapC .sse) zg)
+    {sc : Nat}
     {z : Nat → Bool} (hsc : sc ≤ 2048) (CZ : CrCallZ (v.wrapC .sse) sc z) (hB : BlkLeaves B)
     (hct : Plain v.callees.ctr.code) (hgh : Plain v.callees.gh.code) (hn : UpperLock.inames B.enc.code = []) :
     ResOk (withStackArgScratch 2584 1 (Impl.AesGcm.X86_64.streamEncryptClr (v.withBlk B) .sse))
@@ -2961,11 +2962,12 @@ theorem streamEncryptWZ_resOk (v : GcmImpl) (B : BlkFn CtxMode.base) (gf : Ghash
   intro s₁ s₂ t₁ t₂ u₁ u₂ h₁ h₂ hp ho hu e₁ e₂ x hx _
   have h₁' := h₁
   unfold Spec.Gcm.streamEncryptPreparedContract at h₁'
-  exact streamEncBZ_agree .sse v B gf hsc CZ hB hct hgh hn h₁ h₂ hp (fun r h => ho.2.2.1 r h)
+  exact streamEncBZ_agree .sse v B GZ hsc CZ hB hct hgh hn h₁ h₂ hp (fun r h => ho.2.2.1 r h)
     (below_same h₁' ho (by decide)) hu e₁ e₂ x hx
 
 open StackLock in
-theorem streamDecryptWZ_resOk (v : GcmImpl) (B : BlkFn CtxMode.base) (gf : GhashFree v.gh.fn.code) {sc : Nat}
+theorem streamDecryptWZ_resOk (v : GcmImpl) (B : BlkFn CtxMode.base) {zg : Nat → Bool} (GZ : GhCallZ (v.wrapC .sse) zg)
+    {sc : Nat}
     {z : Nat → Bool} (hsc : sc ≤ 2048) (CZ : CrCallZ (v.wrapC .sse) sc z) (hB : BlkLeavesD B)
     (hct : Plain v.callees.ctr.code) (hgh : Plain v.callees.gh.code) (hn : UpperLock.inames B.dec.code = []) :
     ResOk (withStackArgScratch 2584 1 (Impl.AesGcm.X86_64.streamDecryptClr (v.withBlk B) .sse))
@@ -2973,7 +2975,7 @@ theorem streamDecryptWZ_resOk (v : GcmImpl) (B : BlkFn CtxMode.base) (gf : Ghash
   intro s₁ s₂ t₁ t₂ u₁ u₂ h₁ h₂ hp ho hu e₁ e₂ x hx _
   have h₁' := h₁
   unfold Spec.Gcm.streamDecryptPreparedContract at h₁'
-  exact streamDecBZ_agree .sse v B gf hsc CZ hB hct hgh hn h₁ h₂ hp (fun r h => ho.2.2.1 r h)
+  exact streamDecBZ_agree .sse v B GZ hsc CZ hB hct hgh hn h₁ h₂ hp (fun r h => ho.2.2.1 r h)
     (below_same h₁' ho (by decide)) hu e₁ e₂ x hx
 
 /-- `StreamChk` over the callees of `v`. -/
@@ -3019,7 +3021,8 @@ def streamEncryptWPclmul : Registration Spec.Gcm.streamEncryptPreparedApi X86_64
     if h9 : ∀ i ∈ instrs pclmulV.impl.ctr.callee.code, Taint.clobbers i .r9 = false then
       if h : StreamChkV (pclmulW f h9) (streamEncryptPclmulPlain f h9).code (blkS pclmulV.impl).enc.code then
         RScrub.withScrubResCR (streamEncryptPclmulPlain f h9) (streamEncryptPreparedOut _) [] [2608]
-          (streamEncryptWZ_resOk (pclmulW f h9) (blkS pclmulV.impl) gf (by decide) (pclmulW_crCallZ f h9)
+          (streamEncryptWZ_resOk (pclmulW f h9) (blkS pclmulV.impl)
+            (ghCallZ_free _ (gf.wrapC .sse)) (by decide) (pclmulW_crCallZ f h9)
             (blkS_pclmul_leaves f gf) ⟨(pclmulW f h9).ctr.nosp, h.1⟩ ⟨(pclmulW f h9).gh.nosp, h.2.1⟩ h.2.2.1)
           [] scratchRegs (VecLock.regsOk_of_vec (streamEncryptPclmulPlain f h9).verified.2.1 h.2.2.2.1 h.2.2.2.2)
       else streamEncryptPclmulPlain f h9
@@ -3034,12 +3037,203 @@ def streamDecryptWPclmul : Registration Spec.Gcm.streamDecryptPreparedApi X86_64
     if h9 : ∀ i ∈ instrs pclmulV.impl.ctr.callee.code, Taint.clobbers i .r9 = false then
       if h : StreamChkV (pclmulW f h9) (streamDecryptPclmulPlain f h9).code (blkS pclmulV.impl).dec.code then
         RScrub.withScrubResCR (streamDecryptPclmulPlain f h9) (streamDecryptPreparedOut _) [] [2608]
-          (streamDecryptWZ_resOk (pclmulW f h9) (blkS pclmulV.impl) gf (by decide) (pclmulW_crCallZ f h9)
+          (streamDecryptWZ_resOk (pclmulW f h9) (blkS pclmulV.impl)
+            (ghCallZ_free _ (gf.wrapC .sse)) (by decide) (pclmulW_crCallZ f h9)
             (blkS_pclmul_leavesD f gf) ⟨(pclmulW f h9).ctr.nosp, h.1⟩ ⟨(pclmulW f h9).gh.nosp, h.2.1⟩ h.2.2.1)
           [] scratchRegs (VecLock.regsOk_of_vec (streamDecryptPclmulPlain f h9).verified.2.1 h.2.2.2.1 h.2.2.2.2)
       else streamDecryptPclmulPlain f h9
     else streamDecryptWSPlain pclmulV
   | _, _ => streamDecryptWSPlain pclmulV
+
+/-! ## `vg_aes_gcm_stream_{en,de}crypt_prepared_aesni` and `vg_aes_gcm_stream_{en,de}crypt_prepared`, without secret residue
+
+As the `_pclmul` functions, over `vg_ghash_w` too, which zeroes the 256 bytes
+of its working space at `W + 512` before it returns, and whole blocks that
+zero those of theirs. -/
+
+/-- The variant on AES-NI alone. -/
+def aesNiV : GcmVariant := ⟨.aesni, .aesni, .scalar, none⟩
+
+/-- The variant on the baseline instruction set. -/
+def scalarV : GcmVariant := ⟨.scalar, .scalar, .scalar, none⟩
+
+theorem blkWipeN_aesNi : blkWipeN aesNiV.impl = 256 := rfl
+
+theorem blkWipeN_scalar : blkWipeN scalarV.impl = 1480 := rfl
+
+theorem blkS_aesNi_leaves (cf : VG.Proof.Aes.X86_64.Ctr32Free aesNiV.impl.ctr.callee) :
+    BlkLeaves (blkS aesNiV.impl) :=
+  BlkFn.wipeS_leaves (blkWipeN aesNiV.impl) _ _ aesNiV.impl.blkB (Wn := zw 64 320)
+    (fun d h => by rw [blkWipeN_aesNi]; simp [zw] at h; omega) fun s hpre => by
+    change WP isa (Impl.AesGcm.X86_64.Blocks.encrypt
+      ⟨aesNiV.impl.ctr.callee.name, aesNiV.impl.ctr.callee.code⟩ aesNiV.impl.gh.fn none) s _
+    exact Blocks.encryptS_leaves (Blocks.BP.ofM hpre) _ _ (by decide) (by decide) (Blocks.CtrW.free aesNiV.impl.ctr cf)
+      (Blocks.GhW.base aesNiV.impl.gh) fun d h1 h2 => by simp [zw]; omega
+
+theorem blkS_aesNi_leavesD (cf : VG.Proof.Aes.X86_64.Ctr32Free aesNiV.impl.ctr.callee) :
+    BlkLeavesD (blkS aesNiV.impl) :=
+  BlkFn.wipeS_leavesD (blkWipeN aesNiV.impl) _ _ aesNiV.impl.blkB (Wn := zw 64 320)
+    (fun d h => by rw [blkWipeN_aesNi]; simp [zw] at h; omega) fun s hpre => by
+    change WP isa (Impl.AesGcm.X86_64.Blocks.decrypt
+      ⟨aesNiV.impl.ctr.callee.name, aesNiV.impl.ctr.callee.code⟩ aesNiV.impl.gh.fn none) s _
+    exact Blocks.decryptS_leaves (Blocks.BP.ofM hpre) _ _ (by decide) (by decide) (Blocks.CtrW.free aesNiV.impl.ctr cf)
+      (Blocks.GhW.base aesNiV.impl.gh) fun d h1 h2 => by simp [zw]; omega
+
+theorem blkS_scalar_leaves (f : VG.Proof.Aes.X86_64.Ctr32Small scalarV.impl.ctr.callee) :
+    BlkLeaves (blkS scalarV.impl) :=
+  BlkFn.wipeS_leaves (blkWipeN scalarV.impl) _ _ scalarV.impl.blkB (Wn := zw 64 1544)
+    (fun d h => by rw [blkWipeN_scalar]; simp [zw] at h; omega) fun s hpre => by
+    change WP isa (Impl.AesGcm.X86_64.Blocks.encrypt
+      ⟨scalarV.impl.ctr.callee.name, scalarV.impl.ctr.callee.code⟩ scalarV.impl.gh.fn none) s _
+    exact Blocks.encryptS_leaves (Blocks.BP.ofM hpre) _ _ (by decide) (by decide) (CtrW.small scalarV.impl.ctr f)
+      (Blocks.GhW.base scalarV.impl.gh) fun d h1 h2 => by simp [zw]; omega
+
+theorem blkS_scalar_leavesD (f : VG.Proof.Aes.X86_64.Ctr32Small scalarV.impl.ctr.callee) :
+    BlkLeavesD (blkS scalarV.impl) :=
+  BlkFn.wipeS_leavesD (blkWipeN scalarV.impl) _ _ scalarV.impl.blkB (Wn := zw 64 1544)
+    (fun d h => by rw [blkWipeN_scalar]; simp [zw] at h; omega) fun s hpre => by
+    change WP isa (Impl.AesGcm.X86_64.Blocks.decrypt
+      ⟨scalarV.impl.ctr.callee.name, scalarV.impl.ctr.callee.code⟩ scalarV.impl.gh.fn none) s _
+    exact Blocks.decryptS_leaves (Blocks.BP.ofM hpre) _ _ (by decide) (by decide) (CtrW.small scalarV.impl.ctr f)
+      (Blocks.GhW.base scalarV.impl.gh) fun d h1 h2 => by simp [zw]; omega
+
+/-- `aesNiV`'s implementation over `vg_ghash_w`. -/
+def aesNiW (h8 : ∀ i ∈ instrs aesNiV.impl.gh.fn.code, Taint.clobbers i .r8 = false) : GcmImpl :=
+  { aesNiV.impl with gh := aesNiV.impl.gh.wipe h8 }
+
+/-- `scalarV`'s implementation over `vg_aes_ctr32_w` and `vg_ghash_w`. -/
+def scalarW (f : VG.Proof.Aes.X86_64.Ctr32Small scalarV.impl.ctr.callee)
+    (h9 : ∀ i ∈ instrs scalarV.impl.ctr.callee.code, Taint.clobbers i .r9 = false)
+    (h8 : ∀ i ∈ instrs scalarV.impl.gh.fn.code, Taint.clobbers i .r8 = false) : GcmImpl :=
+  { scalarV.impl with ctr := scalarV.impl.ctr.wipe h9 f, gh := scalarV.impl.gh.wipe h8 }
+
+/-- `vg_aes_gcm_stream_encrypt_prepared_aesni` over `aesNiW`, before any
+clearing on return. -/
+def streamEncryptAesNiPlain (h8 : ∀ i ∈ instrs aesNiV.impl.gh.fn.code, Taint.clobbers i .r8 = false) :
+    Registration Spec.Gcm.streamEncryptPreparedApi X86_64.target where
+  suffix := aesNiV.impl.suffix
+  code := Impl.StackScratch.X86_64.withStackArgScratch 2584 1
+    (Impl.AesGcm.X86_64.streamEncryptClr ((aesNiW h8).withBlk (blkS aesNiV.impl)) .sse)
+  stack := 2608
+  verified := VG.Proof.AesGcm.Flag.streamEncrypt_keyed
+    (Flag.streamEncrypt_of_base (streamEncryptClrB_framed .sse (aesNiW h8) (blkS aesNiV.impl)))
+  spSafe := streamEncryptClr_spSafe .sse (aesNiW h8) (blkS aesNiV.impl)
+
+/-- `streamEncryptAesNiPlain` for `vg_aes_gcm_stream_decrypt_prepared_aesni`. -/
+def streamDecryptAesNiPlain (h8 : ∀ i ∈ instrs aesNiV.impl.gh.fn.code, Taint.clobbers i .r8 = false) :
+    Registration Spec.Gcm.streamDecryptPreparedApi X86_64.target where
+  suffix := aesNiV.impl.suffix
+  code := Impl.StackScratch.X86_64.withStackArgScratch 2584 1
+    (Impl.AesGcm.X86_64.streamDecryptClr ((aesNiW h8).withBlk (blkS aesNiV.impl)) .sse)
+  stack := 2608
+  verified := VG.Proof.AesGcm.Flag.streamDecrypt_keyed
+    (Flag.streamDecrypt_of_base (streamDecryptClrB_framed .sse (aesNiW h8) (blkS aesNiV.impl)))
+  spSafe := streamDecryptClr_spSafe .sse (aesNiW h8) (blkS aesNiV.impl)
+
+/-- `vg_aes_gcm_stream_encrypt_prepared` over `scalarW`, before any clearing
+on return. -/
+def streamEncryptScalarPlain (f : VG.Proof.Aes.X86_64.Ctr32Small scalarV.impl.ctr.callee)
+    (h9 : ∀ i ∈ instrs scalarV.impl.ctr.callee.code, Taint.clobbers i .r9 = false)
+    (h8 : ∀ i ∈ instrs scalarV.impl.gh.fn.code, Taint.clobbers i .r8 = false) :
+    Registration Spec.Gcm.streamEncryptPreparedApi X86_64.target where
+  suffix := scalarV.impl.suffix
+  code := Impl.StackScratch.X86_64.withStackArgScratch 2584 1
+    (Impl.AesGcm.X86_64.streamEncryptClr ((scalarW f h9 h8).withBlk (blkS scalarV.impl)) .sse)
+  stack := 2608
+  verified := VG.Proof.AesGcm.Flag.streamEncrypt_keyed
+    (Flag.streamEncrypt_of_base (streamEncryptClrB_framed .sse (scalarW f h9 h8) (blkS scalarV.impl)))
+  spSafe := streamEncryptClr_spSafe .sse (scalarW f h9 h8) (blkS scalarV.impl)
+
+/-- `streamEncryptScalarPlain` for `vg_aes_gcm_stream_decrypt_prepared`. -/
+def streamDecryptScalarPlain (f : VG.Proof.Aes.X86_64.Ctr32Small scalarV.impl.ctr.callee)
+    (h9 : ∀ i ∈ instrs scalarV.impl.ctr.callee.code, Taint.clobbers i .r9 = false)
+    (h8 : ∀ i ∈ instrs scalarV.impl.gh.fn.code, Taint.clobbers i .r8 = false) :
+    Registration Spec.Gcm.streamDecryptPreparedApi X86_64.target where
+  suffix := scalarV.impl.suffix
+  code := Impl.StackScratch.X86_64.withStackArgScratch 2584 1
+    (Impl.AesGcm.X86_64.streamDecryptClr ((scalarW f h9 h8).withBlk (blkS scalarV.impl)) .sse)
+  stack := 2608
+  verified := VG.Proof.AesGcm.Flag.streamDecrypt_keyed
+    (Flag.streamDecrypt_of_base (streamDecryptClrB_framed .sse (scalarW f h9 h8) (blkS scalarV.impl)))
+  spSafe := streamDecryptClr_spSafe .sse (scalarW f h9 h8) (blkS scalarV.impl)
+
+open VG.X86_64.Scrub StackLock in
+/-- `vg_aes_gcm_stream_encrypt_prepared_aesni`, followed by the clearing of
+the scratch registers only, as `streamEncryptWPclmul`. `streamEncryptWSPlain`
+if the emitter's checks fail. -/
+def streamEncryptWAesNi : Registration Spec.Gcm.streamEncryptPreparedApi X86_64.target :=
+  match aesNiV.impl.ctr.free with
+  | some cf =>
+    if h8 : ∀ i ∈ instrs aesNiV.impl.gh.fn.code, Taint.clobbers i .r8 = false then
+      if h : StreamChkV (aesNiW h8) (streamEncryptAesNiPlain h8).code (blkS aesNiV.impl).enc.code then
+        RScrub.withScrubResCR (streamEncryptAesNiPlain h8) (streamEncryptPreparedOut _) [] [2608]
+          (streamEncryptWZ_resOk (aesNiW h8) (blkS aesNiV.impl)
+            (ghCallZ_wipeC .sse _ (c₀ := aesNiV.impl.gh.fn.code) rfl h8) (by decide)
+            (crCallZ_free _ (cf.wrapC .sse)) (blkS_aesNi_leaves cf)
+            ⟨(aesNiW h8).ctr.nosp, h.1⟩ ⟨(aesNiW h8).gh.nosp, h.2.1⟩ h.2.2.1)
+          [] scratchRegs (VecLock.regsOk_of_vec (streamEncryptAesNiPlain h8).verified.2.1 h.2.2.2.1 h.2.2.2.2)
+      else streamEncryptAesNiPlain h8
+    else streamEncryptWSPlain aesNiV
+  | none => streamEncryptWSPlain aesNiV
+
+open VG.X86_64.Scrub StackLock in
+/-- `streamEncryptWAesNi` for `vg_aes_gcm_stream_decrypt_prepared_aesni`. -/
+def streamDecryptWAesNi : Registration Spec.Gcm.streamDecryptPreparedApi X86_64.target :=
+  match aesNiV.impl.ctr.free with
+  | some cf =>
+    if h8 : ∀ i ∈ instrs aesNiV.impl.gh.fn.code, Taint.clobbers i .r8 = false then
+      if h : StreamChkV (aesNiW h8) (streamDecryptAesNiPlain h8).code (blkS aesNiV.impl).dec.code then
+        RScrub.withScrubResCR (streamDecryptAesNiPlain h8) (streamDecryptPreparedOut _) [] [2608]
+          (streamDecryptWZ_resOk (aesNiW h8) (blkS aesNiV.impl)
+            (ghCallZ_wipeC .sse _ (c₀ := aesNiV.impl.gh.fn.code) rfl h8) (by decide)
+            (crCallZ_free _ (cf.wrapC .sse)) (blkS_aesNi_leavesD cf)
+            ⟨(aesNiW h8).ctr.nosp, h.1⟩ ⟨(aesNiW h8).gh.nosp, h.2.1⟩ h.2.2.1)
+          [] scratchRegs (VecLock.regsOk_of_vec (streamDecryptAesNiPlain h8).verified.2.1 h.2.2.2.1 h.2.2.2.2)
+      else streamDecryptAesNiPlain h8
+    else streamDecryptWSPlain aesNiV
+  | none => streamDecryptWSPlain aesNiV
+
+open VG.X86_64.Scrub StackLock in
+/-- `vg_aes_gcm_stream_encrypt_prepared`, followed by the clearing of the
+scratch registers only, as `streamEncryptWPclmul`. `streamEncryptWSPlain` if
+the emitter's checks fail. -/
+def streamEncryptWScalar : Registration Spec.Gcm.streamEncryptPreparedApi X86_64.target :=
+  match scalarV.impl.ctr.small with
+  | some f =>
+    if h9 : ∀ i ∈ instrs scalarV.impl.ctr.callee.code, Taint.clobbers i .r9 = false then
+      if h8 : ∀ i ∈ instrs scalarV.impl.gh.fn.code, Taint.clobbers i .r8 = false then
+        if h : StreamChkV (scalarW f h9 h8) (streamEncryptScalarPlain f h9 h8).code (blkS scalarV.impl).enc.code then
+          RScrub.withScrubResCR (streamEncryptScalarPlain f h9 h8) (streamEncryptPreparedOut _) [] [2608]
+            (streamEncryptWZ_resOk (scalarW f h9 h8) (blkS scalarV.impl)
+              (ghCallZ_wipeC .sse _ (c₀ := scalarV.impl.gh.fn.code) rfl h8) (by decide)
+              (crCallZ_wipeC .sse _ (c₀ := scalarV.impl.ctr.callee.code) rfl h9 ((f.wipe h9).wrapC .sse))
+              (blkS_scalar_leaves f) ⟨(scalarW f h9 h8).ctr.nosp, h.1⟩ ⟨(scalarW f h9 h8).gh.nosp, h.2.1⟩ h.2.2.1)
+            [] scratchRegs
+            (VecLock.regsOk_of_vec (streamEncryptScalarPlain f h9 h8).verified.2.1 h.2.2.2.1 h.2.2.2.2)
+        else streamEncryptScalarPlain f h9 h8
+      else streamEncryptWSPlain scalarV
+    else streamEncryptWSPlain scalarV
+  | none => streamEncryptWSPlain scalarV
+
+open VG.X86_64.Scrub StackLock in
+/-- `streamEncryptWScalar` for `vg_aes_gcm_stream_decrypt_prepared`. -/
+def streamDecryptWScalar : Registration Spec.Gcm.streamDecryptPreparedApi X86_64.target :=
+  match scalarV.impl.ctr.small with
+  | some f =>
+    if h9 : ∀ i ∈ instrs scalarV.impl.ctr.callee.code, Taint.clobbers i .r9 = false then
+      if h8 : ∀ i ∈ instrs scalarV.impl.gh.fn.code, Taint.clobbers i .r8 = false then
+        if h : StreamChkV (scalarW f h9 h8) (streamDecryptScalarPlain f h9 h8).code (blkS scalarV.impl).dec.code then
+          RScrub.withScrubResCR (streamDecryptScalarPlain f h9 h8) (streamDecryptPreparedOut _) [] [2608]
+            (streamDecryptWZ_resOk (scalarW f h9 h8) (blkS scalarV.impl)
+              (ghCallZ_wipeC .sse _ (c₀ := scalarV.impl.gh.fn.code) rfl h8) (by decide)
+              (crCallZ_wipeC .sse _ (c₀ := scalarV.impl.ctr.callee.code) rfl h9 ((f.wipe h9).wrapC .sse))
+              (blkS_scalar_leavesD f) ⟨(scalarW f h9 h8).ctr.nosp, h.1⟩ ⟨(scalarW f h9 h8).gh.nosp, h.2.1⟩ h.2.2.1)
+            [] scratchRegs
+            (VecLock.regsOk_of_vec (streamDecryptScalarPlain f h9 h8).verified.2.1 h.2.2.2.1 h.2.2.2.2)
+        else streamDecryptScalarPlain f h9 h8
+      else streamDecryptWSPlain scalarV
+    else streamDecryptWSPlain scalarV
+  | none => streamDecryptWSPlain scalarV
 
 /-- `vg_aes_gcm_stream_encrypt_prepared` of a variant whose loops read 16
 powers: `streamEncryptF16Vaes` for the function of the VAES variant's name,
@@ -3054,10 +3248,14 @@ def streamEncryptF16Reg (v : GcmVariant) : Registration Spec.Gcm.streamEncryptPr
 the key context: for the variant on AES-NI and PCLMULQDQ, whose callees never
 touch the stack, the code that clears the registers after each call
 (`streamEncryptClr`, at the level of SSE); for the others, the same code over
-callees that zero their working space (`streamEncryptWSPlain`). -/
+callees that zero their working space, with the scratch registers cleared on
+return (`streamEncryptWPclmul`, `streamEncryptWAesNi`, `streamEncryptWScalar`,
+or `streamEncryptWSPlain` for any other). -/
 def streamEncryptWReg (v : GcmVariant) : Registration Spec.Gcm.streamEncryptPreparedApi X86_64.target :=
   if v.impl.suffix = aesNiPclmulV.impl.suffix then streamEncryptWAesniPclmul
   else if v.impl.suffix = pclmulV.impl.suffix then streamEncryptWPclmul
+  else if v.impl.suffix = aesNiV.impl.suffix then streamEncryptWAesNi
+  else if v.impl.suffix = scalarV.impl.suffix then streamEncryptWScalar
   else streamEncryptWSPlain v
 
 /-- `vg_aes_gcm_stream_decrypt_prepared` of a variant whose loops read only
@@ -3065,6 +3263,8 @@ the key context, as `streamEncryptWReg`. -/
 def streamDecryptWReg (v : GcmVariant) : Registration Spec.Gcm.streamDecryptPreparedApi X86_64.target :=
   if v.impl.suffix = aesNiPclmulV.impl.suffix then streamDecryptWAesniPclmul
   else if v.impl.suffix = pclmulV.impl.suffix then streamDecryptWPclmul
+  else if v.impl.suffix = aesNiV.impl.suffix then streamDecryptWAesNi
+  else if v.impl.suffix = scalarV.impl.suffix then streamDecryptWScalar
   else streamDecryptWSPlain v
 
 /-- `vg_aes_gcm_stream_decrypt_prepared` of a variant whose loops read 16
