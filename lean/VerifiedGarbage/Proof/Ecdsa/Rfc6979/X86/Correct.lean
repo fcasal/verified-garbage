@@ -46,7 +46,8 @@ theorem WP.callWithR {rs : List Reg} {r : Reg} {n : String} {c : Prog isa} {k : 
     (hk : CallPre k rs rd wr s) {Q : State → Prop}
     (hQ : ∀ s', s'.rd = s.rd → s'.wr = s.wr → s'.gpr .esp = s.gpr .esp →
       Frame (wr ++ [below (s.gpr .esp) (4 * rs.length + stackUse c + 4)]) s.mem s'.mem →
-      (∃ s₂ : State, s₂.mem = s'.mem ∧ (∀ q, q ≠ .esp → q ≠ r → s₂.gpr q = s'.gpr q) ∧
+      (∃ s₂ : State, Frame [below (s.gpr .esp) (4 * rs.length)] s₂.mem s'.mem ∧
+        (∀ q, q ≠ .esp → q ≠ r → s₂.gpr q = s'.gpr q) ∧
         k.post ((pushed rs s).callEntry.withRegions rd wr) s₂) → Q s') :
     WP isa (.frame (.push rs) (.call n c) (.pop r rs.length)) s Q := by
   obtain hn : 4 * rs.length ≤ (s.gpr .esp).toNat := by omega_arith
@@ -54,12 +55,15 @@ theorem WP.callWithR {rs : List Reg} {r : Reg} {n : String} {c : Prog isa} {k : 
     rw [pushed_esp, sub_toNat hn]
   refine WP.frame hne hrs hr hn (fun i hi => hsp i hi) ?_
   refine WP.call hv hsp (by rw [e]; omega_arith) hk.pre (by rw [pushed_rd, pushed_wr]; exact hk.cov)
-    (by rw [pushed_wr]; exact hk.covw) fun s₂ rd₂ wr₂ cs₂ f₂ _ ⟨s₃, m₃, g₃, post₃⟩ => ?_
+    (by rw [pushed_wr]; exact hk.covw) fun s₂ rd₂ wr₂ cs₂ f₂ _ ⟨s₃, m₃, g₃, post₃⟩ m u fl => ?_
   refine hQ _ (by rw [popped_rd, rd₂, pushed_rd]) (by rw [popped_wr, wr₂, pushed_wr]; rfl) ?_ ?_
-    ⟨s₃, by rw [m₃, popped_mem], fun q h₁ h₂ => by rw [popped_gpr _ _ _ h₁ h₂]; exact g₃ q h₁, post₃⟩
+    ⟨s₃, by rw [m₃]; exact fl, fun q h₁ h₂ => by rw [popped_gpr _ _ _ h₁ h₂]; exact g₃ q h₁, post₃⟩
   · rw [popped_esp, cs₂ .esp (by simp [calleeSaved]), pushed_esp]; exact BitVec.sub_add_cancel _ _
-  · rw [popped_mem]
-    refine ((pushed_frame hrs hn).sub fun r hr => ?_).trans (f₂.sub fun r hr => ?_)
+  · refine (((pushed_frame hrs hn).sub fun r hr => ?_).trans (f₂.sub fun r hr => ?_)).trans
+      (fl.sub fun r hr => ?_)
+    · simp only [List.mem_singleton] at hr; subst hr
+      exact ⟨_, List.mem_append_right _ (List.mem_singleton_self _), below_sub (by omega_arith) hd⟩
+    rotate_left
     · simp only [List.mem_singleton] at hr; subst hr
       exact ⟨_, List.mem_append_right _ (List.mem_singleton_self _), below_sub (by omega_arith) hd⟩
     · rcases List.mem_append.mp hr with hr | hr
@@ -314,11 +318,12 @@ theorem core_ok (hL : L.Ok) (hk : CoreOk P L) {t : State} (hc : Ctx L g m₀ t) 
     refine sub_trans (below_sub (b := 76) (by change 4 * 5 + _ + 4 ≤ 76; omega_arith) (by rw [hc.esp, hL.FN]; have := hL.e588; omega_arith)) ?_
     rw [hc.esp, hL.below_F]; exact sub_refl _
   obtain eW : coreWr P L = [L.OUT, L.SCR] := by simp only [coreWr, Lay.OUT, hq]
+  obtain hd : 4 * core5.length + stackUse P.R.coreC + 4 ≤ (t.gpr .esp).toNat := by
+    rw [hc.esp, hL.FN]; have := hL.e588; have := P.R.coreStack
+    have := VG.Proof.Ecdsa.X86.Cfg.stk_le P.R.E; change 4 * 5 + _ + 4 ≤ _; omega_arith
   refine WP.of_syms ?_
   refine WP.callWithR (rs := core5) (k := coreK P.R.E) P.R.coreX P.R.coreNs (by decide) (by decide)
-    (by decide) (by
-      rw [hc.esp, hL.FN]; have := hL.e588; have := P.R.coreStack
-      have := VG.Proof.Ecdsa.X86.Cfg.stk_le P.R.E; change 4 * 5 + _ + 4 ≤ _; omega_arith) (core_callPre hL hk hc hr)
+    (by decide) hd (core_callPre hL hk hc hr)
     fun t' hrd hwr hesp hf ⟨s₂, hm, hg₂, hpost⟩ hsy => ?_
   obtain hf' : Frame [L.OUT, L.SCR, ⟨L.B, 76⟩] t.mem t'.mem := hf.sub fun q hq' => by
     simp only [eW, List.cons_append, List.nil_append, List.mem_cons, List.not_mem_nil, or_false] at hq'
@@ -343,9 +348,16 @@ theorem core_ok (hL : L.Ok) (hk : CoreOk P L) {t : State} (hc : Ctx L g m₀ t) 
       obtain h₁ : Region.Disjoint ⟨L.d, P.R.E.C.len⟩ ⟨L.B, 76⟩ :=
         (hL.kd.sub_left (Region.sub_prefix (by omega_arith))).symm.sub_left (Region.sub_prefix (by omega_arith))
       rw [ce_bytesAt hL hc h₁ (by omega_arith), ce_bytesAt hL hc gB (by omega_arith), ce_bytesAt hL hc kB (by omega_arith)]
+    obtain kO : Spec.Sha256.bytesAt t'.mem L.out (2 * P.Q) = Spec.Sha256.bytesAt s₂.mem L.out (2 * P.Q) := by
+      refine bytesAt_frame hm (fun q hq' => ?_) (by omega_arith)
+      simp only [List.mem_singleton] at hq'; subst hq'
+      rw [← hq]
+      exact (hL.ko.sub_left (sub_trans (sub_trans (below_sub (by omega_arith) hd) hsp)
+        (Region.sub_prefix (by omega_arith)))).symm
     have hp := hpost
-    simp only [coreK, a0, a1, a2, a3, dgArg_w hL, kArg_w hL, hs, hm, hg₂ .eax (by decide) (by decide),
+    simp only [coreK, a0, a1, a2, a3, dgArg_w hL, kArg_w hL, hs, hg₂ .eax (by decide) (by decide),
       BitVec.setWidth_append_eq_right] at hp
+    rw [kO]
     exact hp
 
 end VG.Proof.Ecdsa.Rfc6979.X86

@@ -577,11 +577,14 @@ theorem fast_ok {s : State} {base : Addr} {size w candidate : Nat}
     by_cases same : r = .edi
     · subst r; exact restored
     · exact Kall.1 r (by cases r <;> simp_all)
+  intro m _ fl
   refine ⟨?_, ?_, VG.Proof.RsaKeyGen.X86.FilterStack.freed_keeps Kbody (by decide)⟩
-  · rw [freed_gpr _ _ (by decide), T.other .eax (by decide), result, value, pbase,
+  · show (freed 20 t).gpr .eax = _
+    rw [freed_gpr _ _ (by decide), T.other .eax (by decide), result, value, pbase,
       val32_off, Nat.add_zero, saved]
-  · rw [freed_mem, T.mem, Mb]
-    exact frameA
+  · show Frame _ s.mem m
+    rw [T.mem, Mb] at fl
+    exact frameA.trans fl
 
 end VG.Proof.RsaKeyGen.X86.ExponentRt
 

@@ -186,7 +186,7 @@ theorem call_ok {s : State} {base : Addr} {size n m : Nat}
   refine workspaceCall_ok (P := P) (Q := fun mem => wordsVal mem base (slot n 6) n =
       wordsVal s.mem base (slot n 5) n * wordsVal s.mem base (slot n 8) n % m)
     (bytes := contextBytes n) (name := mulName n) hs room hused (body_noSp n)
-    (by rw [body_stackUse]; decide) (Pow.scratch_fits hz) ?_ ?_
+    (by rw [body_stackUse]; decide) (Pow.scratch_fits hz) ?_ ?_ ?_
   · intro mem F
     have vals : ∀ d k, d + 4 * k ≤ size → val32 mem base d k = val32 s.mem base d k :=
       fun _ _ hd => Pow.frame_val32 room hs.nowrap F hd
@@ -200,6 +200,10 @@ theorem call_ok {s : State} {base : Addr} {size n m : Nat}
   · intro v E _ ⟨M, A, B⟩
     exact WP.mono (body_ok E hz hn hn48 M hm1 hodd) fun w ⟨V, O, R, Rd, Wr⟩ =>
       ⟨by rw [V, A, B], Pow.OutsS.of_outs O, R, Rd, Wr⟩
+  · intro mem mem' F h
+    rw [wordsVal_eq_val32, Pow.frame_val32 room hs.nowrap F
+      (by simp only [contextBytes, slot, stride] at hz ⊢; omega_using [hz]), ← wordsVal_eq_val32]
+    exact h
 
 end VG.Proof.Dsa.X86.Mul
 
@@ -949,12 +953,17 @@ theorem call_ok {n m : Nat} {s : State} {base : Addr} {size : Nat} {p : BitVec 3
       refine Fe _ fun r hr hc => ?_
       rw [List.mem_singleton.mp hr] at hc
       exact C.stack _ (Offset.contains_base _ (by omega_using [hi']) (by have := C.lenFit; omega_using [a3, hi'])) (inStack hc)
+    have mem : Frame [below (u.gpr .esp) 20] w₂.mem w.mem :=
+      Frame.below_mono (wr := []) mem (by decide) (by omega_using [hu])
     refine ⟨?_, ?_, ?_⟩
-    · rw [← mem, V, a2, a3, Bv, Mv]
+    · rw [wordsVal_eq_val32, frame_val32 Cu.room nw mem
+        (by simp only [contextBytes, slot, stride] at cb ⊢; omega_using [cb]), ← wordsVal_eq_val32, V, a2, a3, Bv, Mv]
     · intro x hx hs
       rw [← U.mem]
       by_cases hin : (⟨base, contextBytes n⟩ : Region).Contains x 1
-      · rw [← mem, O x hx]
+      · rw [mem x fun r hr hc => by
+          rw [List.mem_singleton.mp hr] at hc
+          exact below_apart Cu.room nw (by decide : 20 ≤ 108) cb hc hin, O x hx]
         refine Fe x fun r hr hc => ?_
         rw [List.mem_singleton.mp hr] at hc
         exact below_apart Cu.room nw (by decide : 20 ≤ 108) cb hc hin

@@ -271,22 +271,22 @@ theorem WP.frameInline {rs : List Reg} {c : Prog isa} {k : Contract isa}
     (hw : Covers wr (below (s.gpr .esp) (4 * rs.length) :: s.wr)) {Q : State → Prop}
     (hQ : ∀ s', s'.rd = s.rd → s'.wr = s.wr → (∀ r ∈ calleeSaved, s'.gpr r = s.gpr r) →
       Frame (wr ++ [below (s.gpr .esp) (4 * rs.length)]) s.mem s'.mem →
-      (∃ s₂ : State, s₂.mem = s'.mem ∧ k.post ((pushed rs s).withRegions rd wr) s₂) → Q s') :
+      (∃ s₂ : State, Frame [below (s.gpr .esp) (4 * rs.length)] s₂.mem s'.mem ∧
+        k.post ((pushed rs s).withRegions rd wr) s₂) → Q s') :
     WP isa (.frame (.push rs) c (.pop .eax rs.length)) s Q := by
   refine WP.frame hne hrs (by decide) hd hsp ?_
   refine WP.inline (k := k) hv hpre (by rw [pushed_rd, pushed_wr]; exact hc) (by rw [pushed_wr]; exact hw)
-    (fun s₂ rd₂ wr₂ ha f₂ _ post₂ => ?_) hn
+    (fun s₂ rd₂ wr₂ ha f₂ _ post₂ m u fl => ?_) hn
   refine hQ _ (by rw [popped_rd, rd₂, pushed_rd]) (by rw [popped_wr, wr₂, pushed_wr]; rfl) (fun r hr => ?_) ?_
-    ⟨s₂.withRegions rd wr, by rw [State.withRegions_mem, popped_mem], post₂⟩
+    ⟨s₂.withRegions rd wr, by rw [State.withRegions_mem]; exact fl, post₂⟩
   · by_cases h : r = .esp
     · subst h
       rw [popped_esp, ha.1 .esp hr, pushed_esp]; exact BitVec.sub_add_cancel _ _
     · have hne' : r ≠ .eax := by
         rintro rfl; simp [calleeSaved] at hr
       rw [popped_gpr _ _ _ h hne', ha.1 r hr, pushed_gpr _ _ h]
-  · rw [popped_mem]
-    exact ((pushed_frame hrs hd).mono fun r hr => List.mem_append_right _ hr).trans
-      (f₂.mono fun r hr => List.mem_append_left _ hr)
+  · exact (((pushed_frame hrs hd).mono fun r hr => List.mem_append_right _ hr).trans
+      (f₂.mono fun r hr => List.mem_append_left _ hr)).trans (fl.mono fun r hr => List.mem_append_right _ hr)
 
 /-- Two runs of such code leak the same if its contract holds in both, its
 public data agree, and so does `esp`. -/
@@ -442,8 +442,10 @@ theorem upd_wp {s : State} {W C D S : BitVec 32} {n : Nat} (h : UArgs s W C D S 
     (covW_frame h.writes) fun s' rd' wr' cs' f' ⟨s₂, m₂, post⟩ => ?_
   obtain ⟨a0, a1, a2, a3, -⟩ := h.args
   refine ⟨rd', wr', cs', f'.mono fun r hr => by simpa using hr, ?_⟩
-  simp only [updateX86, arg_withRegions, State.withRegions_mem, a0, a1, a2, a3, hN, m₂] at post
-  rw [post, ciphAt, ciphAt, scheduleAt_frame (pushed_frame hrsU h.fit) fun r hr => by
+  simp only [updateX86, arg_withRegions, State.withRegions_mem, a0, a1, a2, a3, hN] at post
+  rw [Proof.Cmac.bytesAt_frame m₂ (fun r hr => by
+      simp only [List.mem_singleton] at hr; subst hr; exact h.bC.symm) (by decide),
+    post, ciphAt, ciphAt, scheduleAt_frame (pushed_frame hrsU h.fit) fun r hr => by
       simp only [List.mem_singleton] at hr; subst hr; exact h.bW.symm,
     keep_push hrsU h.fit h.bC (by decide)]
   congr 1
@@ -558,8 +560,10 @@ theorem fin_wp {s : State} {K St P S : BitVec 32} {L : Nat} (h : FArgs s K St P 
     (covW_frame h.writes) fun s' rd' wr' cs' f' ⟨s₂, m₂, post⟩ => ?_
   obtain ⟨a0, a1, a2, a3, -⟩ := h.args
   refine ⟨rd', wr', cs', f'.mono fun r hr => by simpa using hr, ?_⟩
-  simp only [finalizeX86, arg_withRegions, State.withRegions_mem, a0, a1, a2, a3, hL, m₂] at post
+  simp only [finalizeX86, arg_withRegions, State.withRegions_mem, a0, a1, a2, a3, hL] at post
   intro _ _ hk msg hm hne hst
+  rw [Proof.Cmac.bytesAt_frame m₂ (fun r hr => by
+    simp only [List.mem_singleton] at hr; subst hr; exact h.bSt.symm) (by decide)]
   obtain hsch : ciphAt (pushed rsU s).mem (K.setWidth 64) = ciphAt s.mem (K.setWidth 64) := by
     simp only [ciphAt]
     rw [scheduleAt_frame (pushed_frame hrsU h.fit) fun r hr => by
@@ -680,7 +684,12 @@ theorem init_inline_wp {s : State} {Kp O S : BitVec 32} {KL : Nat} (h : IArgs s 
     (covW_frame h.writes) fun s' rd' wr' cs' f' ⟨s₂, m₂, post⟩ => ?_
   obtain ⟨a0, a1, a2, -⟩ := h.args
   refine ⟨rd', wr', cs', f'.mono fun r hr => by simpa using hr, ?_⟩
-  simp only [initX86, arg_withRegions, State.withRegions_mem, a0, a1, a2, hK, m₂] at post
+  simp only [initX86, arg_withRegions, State.withRegions_mem, a0, a1, a2, hK] at post
+  rw [← scheduleAt_frame m₂ (fun r hr => by
+      simp only [List.mem_singleton] at hr; subst hr; exact (h.bO.sub_right (Region.sub_prefix (by decide))).symm),
+    ← Proof.Cmac.bytesAt_frame m₂ (fun r hr => by
+      simp only [List.mem_singleton] at hr; subst hr; exact (h.bO.sub_right
+      (Offset.sub_base (O.setWidth 64) (d := 384) (n := 16) (by decide))).symm) (by decide)] at post
   obtain eK : Spec.TripleDes.bytesAt (pushed rsI s).mem (Kp.setWidth 64) KL =
       Spec.TripleDes.bytesAt s.mem (Kp.setWidth 64) KL := by
     simp only [Spec.TripleDes.bytesAt]
