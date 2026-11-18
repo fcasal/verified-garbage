@@ -1,6 +1,9 @@
 module
 
 public import VerifiedGarbage.Spec.Rsa.Contract
+public import VerifiedGarbage.Spec.Rsa.RecoverDet
+public import VerifiedGarbage.Spec.RsaPkcs1Enc.Random
+public import VerifiedGarbage.Spec.RsaPkcs1Sig.Precomputed
 public import VerifiedGarbage.Spec.RsaKeyGen.KeySearchContract
 public import VerifiedGarbage.Proof.Framework.AArch64.ScrubAll
 import VerifiedGarbage.Proof.Ffdh.AArch64.Scrub
@@ -103,5 +106,110 @@ theorem keySearchOk (stack : Nat) (hW : 0 < stack := by decide) :
       rw [e _ (by rw [← hp.2.1]; exact toNat_sw keyLen), wordsAt_of hb.2.1, wordsAt_of hb.2.2.2.2,
         bytesAt48_of hb.2.2.2.2]
       exact h
+
+/-! ## With arguments on the stack -/
+
+theorem crtValuesOk (stack : Nat) :
+    ScrubAllOk (Spec.Rsa.crtValuesContract abi stack) stack (Spec.Rsa.crtValuesSig.retBits abi.ptrBits) :=
+  scrubAllOk_args_pre_any (sig := Spec.Rsa.crtValuesSig) (by decide) fun
+    | [dp, dpLen, dq, dqLen, qinv, qinvLen, _, _, _, pLen, _, qLen, _, _, _, _], m, m₁, m₂, r, _, hp, hb, h => by
+      simp only [Spec.Rsa.crtValuesSig, Sig.bufs, List.mem_cons, List.not_mem_nil, or_false,
+        forall_eq_or_imp, forall_eq, Elem.size] at hb
+      change @Curry.apply (Mem → Prop) [_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _] _ _ m at hp
+      change @Curry.apply (Mem → Mem → BitVec (Spec.Rsa.crtValuesSig.retBits abi.ptrBits) → Prop) [_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _] _ _ _ m₁ r at h
+      change @Curry.apply (Mem → Mem → BitVec (Spec.Rsa.crtValuesSig.retBits abi.ptrBits) → Prop) [_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _] _ _ _ m₂ r
+      dsimp only [Curry.apply, ArgWord.ofRaw] at hp h ⊢
+      obtain ⟨-, -, -, -, -, hdp, hqi, hdq, -⟩ := hp
+      have e₁ : ∀ X, X = dpLen.toNat → Spec.Rsa.bytesAt m₂ dp X = Spec.Rsa.bytesAt m₁ dp X :=
+        fun X hX => hX ▸ bytesAt_of hb.1
+      have e₂ : ∀ X, X = dqLen.toNat → Spec.Rsa.bytesAt m₂ dq X = Spec.Rsa.bytesAt m₁ dq X :=
+        fun X hX => hX ▸ bytesAt_of hb.2.1
+      have e₃ : ∀ X, X = qinvLen.toNat → Spec.Rsa.bytesAt m₂ qinv X = Spec.Rsa.bytesAt m₁ qinv X :=
+        fun X hX => hX ▸ bytesAt_of hb.2.2.1
+      revert h
+      generalize Option.map _ _ = v
+      rw [toNat_sw] at hdp hdq hqi
+      have ep := e₁ _ hdp.symm
+      have eq := e₂ _ hdq.symm
+      have ei := e₃ _ hqi.symm
+      cases v <;> simp only [Spec.Rsa.writtenAll, List.map_cons, List.map_nil, List.mem_cons,
+        List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq, ep, eq, ei] <;> exact id
+
+theorem checkKeyOk (stack : Nat) :
+    ScrubAllOk (Spec.Rsa.checkKeyContract abi stack) stack (Spec.Rsa.checkKeySig.retBits abi.ptrBits) :=
+  scrubAllOk_args_any (sig := Spec.Rsa.checkKeySig) (by decide) fun
+    | [_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _], _, _, _, _, _, _, h => h
+
+theorem recoverPrimesDetOk (stack : Nat) :
+    ScrubAllOk (Spec.Rsa.recoverPrimesDetContract abi stack) stack (Spec.Rsa.recoverPrimesDetSig.retBits abi.ptrBits) :=
+  scrubAllOk_args_pre_any (sig := Spec.Rsa.recoverPrimesDetSig) (by decide) fun
+    | [p, pLen, q, qLen, _, _, _, _, _, _, _, _], m, m₁, m₂, r, _, hp, hb, h => by
+      simp only [Spec.Rsa.recoverPrimesDetSig, Sig.bufs, List.mem_cons, List.not_mem_nil, or_false,
+        forall_eq_or_imp, forall_eq, Elem.size] at hb
+      change @Curry.apply (Mem → Prop) [_, _, _, _, _, _, _, _, _, _, _, _] _ _ m at hp
+      change @Curry.apply (Mem → Mem → BitVec (Spec.Rsa.recoverPrimesDetSig.retBits abi.ptrBits) → Prop) [_, _, _, _, _, _, _, _, _, _, _, _] _ _ _ m₁ r at h
+      change @Curry.apply (Mem → Mem → BitVec (Spec.Rsa.recoverPrimesDetSig.retBits abi.ptrBits) → Prop) [_, _, _, _, _, _, _, _, _, _, _, _] _ _ _ m₂ r
+      dsimp only [Curry.apply, ArgWord.ofRaw] at hp h ⊢
+      obtain ⟨-, hpl, hql, -⟩ := hp
+      have e₁ : ∀ X, X = pLen.toNat → Spec.Rsa.bytesAt m₂ p X = Spec.Rsa.bytesAt m₁ p X :=
+        fun X hX => hX ▸ bytesAt_of hb.1
+      have e₂ : ∀ X, X = qLen.toNat → Spec.Rsa.bytesAt m₂ q X = Spec.Rsa.bytesAt m₁ q X :=
+        fun X hX => hX ▸ bytesAt_of hb.2.1
+      revert h
+      generalize Option.map _ _ = v
+      rw [toNat_sw] at hpl hql
+      have ep := e₁ _ hpl.symm
+      have eq := e₂ _ hql.symm
+      cases v <;> simp only [Spec.Rsa.writtenAll, List.map_cons, List.map_nil, List.mem_cons,
+        List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq, ep, eq] <;> exact id
+
+
+theorem writtenRandom_of {m₁ m₂ : Mem} {o : Addr} {n : Nat} {r : BitVec 32} {v : Option (List Byte)}
+    (e : Spec.Rsa.bytesAt m₂ o n = Spec.Rsa.bytesAt m₁ o n) (h : Spec.RsaPkcs1Enc.writtenRandom m₁ o n r v) :
+    Spec.RsaPkcs1Enc.writtenRandom m₂ o n r v := by
+  cases v <;> simpa only [Spec.RsaPkcs1Enc.writtenRandom, e] using h
+
+theorem pkcs1EncryptRandomOk (stack : Nat) :
+    ScrubAllOk (Spec.RsaPkcs1Enc.encryptRandomContract abi stack) stack (Spec.RsaPkcs1Enc.encryptRandomSig.retBits abi.ptrBits) :=
+  scrubAllOk_args_pre_any (sig := Spec.RsaPkcs1Enc.encryptRandomSig) (by decide) fun
+    | [out, outLen, tape, _, _, _, _, _, _, _, _, _, _, _, _], m, m₁, m₂, r, _, hp, hb, h => by
+      simp only [Spec.RsaPkcs1Enc.encryptRandomSig, Sig.bufs, List.mem_cons, List.not_mem_nil, or_false,
+        forall_eq_or_imp, forall_eq, Elem.size] at hb
+      change @Curry.apply (Mem → Prop) [_, _, _, _, _, _, _, _, _, _, _, _, _, _, _] _ _ m at hp
+      change @Curry.apply (Mem → Mem → BitVec (Spec.RsaPkcs1Enc.encryptRandomSig.retBits abi.ptrBits) → Prop) [_, _, _, _, _, _, _, _, _, _, _, _, _, _, _] _ _ _ m₁ r at h
+      change @Curry.apply (Mem → Mem → BitVec (Spec.RsaPkcs1Enc.encryptRandomSig.retBits abi.ptrBits) → Prop) [_, _, _, _, _, _, _, _, _, _, _, _, _, _, _] _ _ _ m₂ r
+      dsimp only [Curry.apply, ArgWord.ofRaw] at hp h ⊢
+      have e : ∀ X, X = outLen.toNat → Spec.Rsa.bytesAt m₂ out X = Spec.Rsa.bytesAt m₁ out X :=
+        fun X hX => hX ▸ bytesAt_of hb.1
+      have hol := hp.2.1
+      rw [toNat_sw] at hol
+      have e' := e _ hol.symm
+      rw [wordsAt_of hb.2.1]
+      refine ⟨h.1, ?_⟩
+      have h2 := h.2
+      revert h2
+      generalize (Spec.RsaPkcs1Enc.padSearch _ _).outcome = o
+      match o with
+      | .accepted _ => exact fun h2 hP => writtenRandom_of e' (h2 hP)
+      | .entropy .. => simp only [e']; exact id
+      | .exhausted => simp only [e']; exact id
+
+theorem pkcs1VerifyOk (stack : Nat) :
+    ScrubAllOk (Spec.RsaPkcs1Sig.verifyPrecomputedContract abi stack) stack (Spec.RsaPkcs1Sig.verifyPrecomputedSig.retBits abi.ptrBits) :=
+  scrubAllOk_args_any (sig := Spec.RsaPkcs1Sig.verifyPrecomputedSig) (by decide) fun
+    | [_, _, _, _, _, _, _, _, _, _, _, _, _], _, _, _, _, _, _, h => h
+
+theorem pkcs1RecoverOk (stack : Nat) :
+    ScrubAllOk (Spec.RsaPkcs1Sig.recoverPrecomputedContract abi stack) stack (Spec.RsaPkcs1Sig.recoverPrecomputedSig.retBits abi.ptrBits) :=
+  scrubAllOk_args_any (sig := Spec.RsaPkcs1Sig.recoverPrecomputedSig) (by decide) fun
+    | [out, outLen, _, _, _, _, _, _, _, _, _, _, _], m, m₁, m₂, r, _, hb, h => by
+      simp only [Spec.RsaPkcs1Sig.recoverPrecomputedSig, Sig.bufs, List.mem_cons, List.not_mem_nil, or_false,
+        forall_eq_or_imp, forall_eq, Elem.size] at hb
+      change @Curry.apply (Mem → Mem → BitVec (Spec.RsaPkcs1Sig.recoverPrecomputedSig.retBits abi.ptrBits) → Prop) [_, _, _, _, _, _, _, _, _, _, _, _, _] _ _ _ m₁ r at h
+      change @Curry.apply (Mem → Mem → BitVec (Spec.RsaPkcs1Sig.recoverPrecomputedSig.retBits abi.ptrBits) → Prop) [_, _, _, _, _, _, _, _, _, _, _, _, _] _ _ _ m₂ r
+      dsimp only [Curry.apply, ArgWord.ofRaw] at h ⊢
+      have e := bytesAt_of hb.1
+      exact fun hP H hH => written_of (by rw [toNat_sw]; exact e) (h hP H hH)
+
 
 end VG.Proof.Rsa.AArch64.Scrub
