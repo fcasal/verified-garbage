@@ -461,7 +461,6 @@ arm vg_x25519_exchange
 arm vg_x25519_exchange_umaal
 arm vg_zeroize
 powerpc64le vg_camellia_ctr_final
-powerpc64le vg_ct_eq
 powerpc64le vg_sm4_ctr_final
 riscv64 vg_aes_ccm_open
 riscv64 vg_aes_ccm_seal
