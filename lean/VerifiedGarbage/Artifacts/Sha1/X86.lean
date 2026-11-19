@@ -1,6 +1,6 @@
 module
 
-public import VerifiedGarbage.Proof.Sha1.X86.Shared
+public import VerifiedGarbage.Proof.Sha1.X86.Scrub
 public import VerifiedGarbage.Proof.Framework.Registration
 public import VerifiedGarbage.TCB.X86.Print
 public import VerifiedGarbage.Proof.MdStream.X86.DigestInstances
@@ -22,9 +22,7 @@ def artifacts : List Artifact :=
       code := Impl.MdStream.X86.Digest.digest (Proof.Pbkdf2.Stream.X86.sha1H v.stream)
       verified := .unscrubbed (Proof.MdStream.X86.Digest.sha1_digest v.stream)
       spSafe := Proof.MdStream.X86.Digest.sha1_digestSp v.stream }]) ++ [
-  Spec.Sha1.initApi.artifact X86.target {
-    code := Impl.Sha1.X86.Stream.init
-    verified := .unscrubbed Proof.Sha1.X86.Shared.init }] ++
+  Spec.Sha1.initApi.artifact X86.target Proof.Sha1.X86.Scrub.initReg] ++
   (VG.Proof.Variants.Sha1.X86.variants.flatMap fun (v : Proof.Sha1.X86.Variants.Backend) =>
     v.functions.map fun f =>
       f.api.artifact X86.target { f.reg with suffix := v.suffix})

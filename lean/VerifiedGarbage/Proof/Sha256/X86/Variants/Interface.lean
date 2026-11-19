@@ -73,7 +73,7 @@ open VG.X86
 `update_scratch` and `finalize_scratch` with its suffix: a 96-byte state, 20 words of working
 space and a 32-byte digest. -/
 def hmacHash (suffix : String) (updC finC : Prog isa) : Impl.Pbkdf2.Stream.X86.Hash :=
-  ⟨64, 96, 32, 32, 20, Spec.Sha256.initApi.name, Impl.Sha256.X86.Stream.init,
+  ⟨64, 96, 32, 32, 20, (Spec.Sha256.initApi.name ++ "_core"), Impl.Sha256.X86.Stream.init,
     "vg_sha256_update_scratch" ++ suffix, updC, "vg_sha256_finalize_scratch" ++ suffix,
     finC⟩
 
@@ -100,7 +100,7 @@ def fns (suffix cmpN : String) (cmpC updC finC : Prog isa) : Impl.Pbkdf2.Whole.X
 96-byte state and 20 words of working space, and a 28-byte digest of the
 32 bytes `finalize` writes. -/
 def hmacHash224 (suffix : String) (updC finC : Prog isa) : Impl.Pbkdf2.Stream.X86.Hash :=
-  ⟨64, 96, 28, 32, 20, Spec.Sha256.init224Api.name, Impl.Sha256.X86.Stream.init224,
+  ⟨64, 96, 28, 32, 20, (Spec.Sha256.init224Api.name ++ "_core"), Impl.Sha256.X86.Stream.init224,
     "vg_sha256_update_scratch" ++ suffix, updC, "vg_sha256_finalize_scratch" ++ suffix,
     finC⟩
 

@@ -1,6 +1,6 @@
 module
 
-public import VerifiedGarbage.Proof.Sha256.X86.Shared
+public import VerifiedGarbage.Proof.Sha256.X86.Scrub
 public import VerifiedGarbage.Proof.Framework.Registration
 public import VerifiedGarbage.TCB.X86.Print
 public import VerifiedGarbage.Proof.MdStream.X86.DigestInstances
@@ -48,12 +48,8 @@ def artifacts : List Artifact :=
   Digest.artifacts ++
   Sha224Digest.artifacts ++
   [
-    Spec.Sha256.init224Api.artifact X86.target {
-      code := Impl.Sha256.X86.Stream.init224
-      verified := .unscrubbed Proof.Sha256.X86.Shared.init224 },
-    Spec.Sha256.initApi.artifact X86.target {
-      code := Impl.Sha256.X86.Stream.init
-      verified := .unscrubbed Proof.Sha256.X86.Shared.init }] ++
+    Spec.Sha256.init224Api.artifact X86.target Proof.Sha256.X86.Scrub.init224Reg,
+    Spec.Sha256.initApi.artifact X86.target Proof.Sha256.X86.Scrub.initReg] ++
   (VG.Proof.Variants.Sha256.X86.variants.flatMap fun (v : Proof.Sha256.X86.Variants.Backend) =>
     v.functions.map fun f =>
       f.api.artifact X86.target { f.reg with suffix := v.suffix})
