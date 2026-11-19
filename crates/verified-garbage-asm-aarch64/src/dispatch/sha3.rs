@@ -60,6 +60,8 @@ pub unsafe fn vg_sha3_224_update_auto(_dit: verified_garbage_cpu::Dit<'_>, state
 ///
 /// It runs the first of these implementations that applies, in the order its registration file lists them: `vg_sha3_224_finalize_sha3` if the target's vendor is `apple` (or `VG_CPU_FEATURES` names every feature it needs) and the CPU supports its features (`VG_SHA3_224_FINALIZE_SHA3_FEATURES`); or else `vg_sha3_224_finalize`, which needs no CPU feature. It chooses on its first call, and calls the one it chose from then on without choosing again. Each has this documentation but for its stack (whose requirements here are the largest) and what it writes.
 ///
+/// It returns without secret residue: what it leaves in the registers, the flags and the stack below the caller's stack pointer is determined by what its caller left there and by public data (`Target.noResidue`).
+///
 /// # Safety
 ///
 /// * `state` must be valid for reads and writes of 200 bytes.
@@ -162,6 +164,8 @@ pub unsafe fn vg_sha3_256_update_auto(_dit: verified_garbage_cpu::Dit<'_>, state
 /// Contract: `VG.Spec.Sha3.finalizeContract` for `VG.Spec.Sha3.hashSha3_256`. Constant time: only the pointers and `pos` may affect timing, not the state.
 ///
 /// It runs the first of these implementations that applies, in the order its registration file lists them: `vg_sha3_256_finalize_sha3` if the target's vendor is `apple` (or `VG_CPU_FEATURES` names every feature it needs) and the CPU supports its features (`VG_SHA3_256_FINALIZE_SHA3_FEATURES`); or else `vg_sha3_256_finalize`, which needs no CPU feature. It chooses on its first call, and calls the one it chose from then on without choosing again. Each has this documentation but for its stack (whose requirements here are the largest) and what it writes.
+///
+/// It returns without secret residue: what it leaves in the registers, the flags and the stack below the caller's stack pointer is determined by what its caller left there and by public data (`Target.noResidue`).
 ///
 /// # Safety
 ///
@@ -266,6 +270,8 @@ pub unsafe fn vg_sha3_384_update_auto(_dit: verified_garbage_cpu::Dit<'_>, state
 ///
 /// It runs the first of these implementations that applies, in the order its registration file lists them: `vg_sha3_384_finalize_sha3` if the target's vendor is `apple` (or `VG_CPU_FEATURES` names every feature it needs) and the CPU supports its features (`VG_SHA3_384_FINALIZE_SHA3_FEATURES`); or else `vg_sha3_384_finalize`, which needs no CPU feature. It chooses on its first call, and calls the one it chose from then on without choosing again. Each has this documentation but for its stack (whose requirements here are the largest) and what it writes.
 ///
+/// It returns without secret residue: what it leaves in the registers, the flags and the stack below the caller's stack pointer is determined by what its caller left there and by public data (`Target.noResidue`).
+///
 /// # Safety
 ///
 /// * `state` must be valid for reads and writes of 200 bytes.
@@ -368,6 +374,8 @@ pub unsafe fn vg_sha3_512_update_auto(_dit: verified_garbage_cpu::Dit<'_>, state
 /// Contract: `VG.Spec.Sha3.finalizeContract` for `VG.Spec.Sha3.hashSha3_512`. Constant time: only the pointers and `pos` may affect timing, not the state.
 ///
 /// It runs the first of these implementations that applies, in the order its registration file lists them: `vg_sha3_512_finalize_sha3` if the target's vendor is `apple` (or `VG_CPU_FEATURES` names every feature it needs) and the CPU supports its features (`VG_SHA3_512_FINALIZE_SHA3_FEATURES`); or else `vg_sha3_512_finalize`, which needs no CPU feature. It chooses on its first call, and calls the one it chose from then on without choosing again. Each has this documentation but for its stack (whose requirements here are the largest) and what it writes.
+///
+/// It returns without secret residue: what it leaves in the registers, the flags and the stack below the caller's stack pointer is determined by what its caller left there and by public data (`Target.noResidue`).
 ///
 /// # Safety
 ///
@@ -472,6 +480,8 @@ pub unsafe fn vg_shake128_update_auto(_dit: verified_garbage_cpu::Dit<'_>, state
 ///
 /// It runs the first of these implementations that applies, in the order its registration file lists them: `vg_shake128_finalize_sha3` if the target's vendor is `apple` (or `VG_CPU_FEATURES` names every feature it needs) and the CPU supports its features (`VG_SHAKE128_FINALIZE_SHA3_FEATURES`); or else `vg_shake128_finalize`, which needs no CPU feature. It chooses on its first call, and calls the one it chose from then on without choosing again. Each has this documentation but for its stack (whose requirements here are the largest) and what it writes.
 ///
+/// It returns without secret residue: what it leaves in the registers, the flags and the stack below the caller's stack pointer is determined by what its caller left there and by public data (`Target.noResidue`).
+///
 /// # Safety
 ///
 /// * `state` must be valid for reads and writes of 200 bytes.
@@ -519,6 +529,8 @@ pub unsafe fn vg_shake128_finalize_auto(_dit: verified_garbage_cpu::Dit<'_>, sta
 /// Contract: `VG.Spec.Sha3.xofSqueezeContract` for `VG.Spec.Sha3.xofShake128`. Constant time: only the pointers, `pos` and `outlen` may affect timing, not the state.
 ///
 /// It runs the first of these implementations that applies, in the order its registration file lists them: `vg_shake128_squeeze_sha3` if the target's vendor is `apple` (or `VG_CPU_FEATURES` names every feature it needs) and the CPU supports its features (`VG_SHAKE128_SQUEEZE_SHA3_FEATURES`); or else `vg_shake128_squeeze`, which needs no CPU feature. It chooses on its first call, and calls the one it chose from then on without choosing again. Each has this documentation but for its stack (whose requirements here are the largest) and what it writes.
+///
+/// It returns without secret residue: what it leaves in the registers, the flags and the stack below the caller's stack pointer is determined by what its caller left there and by public data (`Target.noResidue`).
 ///
 /// # Safety
 ///
@@ -570,6 +582,8 @@ pub unsafe fn vg_shake128_squeeze_auto(_dit: verified_garbage_cpu::Dit<'_>, stat
 ///
 /// It runs the first of these implementations that applies, in the order its registration file lists them: `vg_shake256_finalize_sha3` if the target's vendor is `apple` (or `VG_CPU_FEATURES` names every feature it needs) and the CPU supports its features (`VG_SHAKE256_FINALIZE_SHA3_FEATURES`); or else `vg_shake256_finalize`, which needs no CPU feature. It chooses on its first call, and calls the one it chose from then on without choosing again. Each has this documentation but for its stack (whose requirements here are the largest) and what it writes.
 ///
+/// It returns without secret residue: what it leaves in the registers, the flags and the stack below the caller's stack pointer is determined by what its caller left there and by public data (`Target.noResidue`).
+///
 /// # Safety
 ///
 /// * `state` must be valid for reads and writes of 200 bytes.
@@ -617,6 +631,8 @@ pub unsafe fn vg_shake256_finalize_auto(_dit: verified_garbage_cpu::Dit<'_>, sta
 /// Contract: `VG.Spec.Sha3.xofSqueezeContract` for `VG.Spec.Sha3.xofShake256`. Constant time: only the pointers, `pos` and `outlen` may affect timing, not the state.
 ///
 /// It runs the first of these implementations that applies, in the order its registration file lists them: `vg_shake256_squeeze_sha3` if the target's vendor is `apple` (or `VG_CPU_FEATURES` names every feature it needs) and the CPU supports its features (`VG_SHAKE256_SQUEEZE_SHA3_FEATURES`); or else `vg_shake256_squeeze`, which needs no CPU feature. It chooses on its first call, and calls the one it chose from then on without choosing again. Each has this documentation but for its stack (whose requirements here are the largest) and what it writes.
+///
+/// It returns without secret residue: what it leaves in the registers, the flags and the stack below the caller's stack pointer is determined by what its caller left there and by public data (`Target.noResidue`).
 ///
 /// # Safety
 ///
