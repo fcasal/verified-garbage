@@ -573,11 +573,6 @@ powerpc64le vg_ed448_sign_cached
 powerpc64le vg_ed448_verify
 powerpc64le vg_rc4_apply
 powerpc64le vg_rc4_init
-powerpc64le vg_rsa_pkcs1_decrypt_precomputed
-powerpc64le vg_rsa_pkcs1_encrypt_random
-powerpc64le vg_rsa_pkcs1_recover_precomputed
-powerpc64le vg_rsa_pkcs1_sign_precomputed
-powerpc64le vg_rsa_pkcs1_verify_precomputed
 powerpc64le vg_scrypt
 powerpc64le vg_sm4_ctr_final
 powerpc64le vg_sm4_gcm_init
