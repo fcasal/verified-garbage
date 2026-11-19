@@ -716,7 +716,6 @@ riscv64 vg_aes_ocb_seal
 riscv64 vg_aes_siv_decrypt
 riscv64 vg_aes_siv_encrypt
 riscv64 vg_aes_siv_init
-riscv64 vg_argon2
 riscv64 vg_cmac_triple_des_absorb
 riscv64 vg_cmac_triple_des_finish
 riscv64 vg_cmac_triple_des_stream_init
@@ -742,7 +741,6 @@ riscv64 vg_rsa_pss_sign_precomputed
 riscv64 vg_rsa_pss_verify_precomputed
 riscv64 vg_rsa_public_precompute
 riscv64 vg_rsa_recover_primes_det
-riscv64 vg_scrypt
 riscv64 vg_sm4_gcm_init
 riscv64 vg_sm4_gcm_open
 riscv64 vg_sm4_gcm_seal
