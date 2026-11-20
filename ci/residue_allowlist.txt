@@ -62,13 +62,6 @@ arm vg_seed_ecb_encrypt
 arm vg_seed_expand_key
 arm vg_seed_ofb
 arm vg_seed_ofb_final
-x86 vg_argon2
-x86 vg_blake2b_finalize
-x86 vg_blake2b_init
-x86 vg_blake2b_update
-x86 vg_blake2s_finalize
-x86 vg_blake2s_init
-x86 vg_blake2s_update
 x86 vg_mldsa44_keygen
 x86 vg_mldsa44_pk_tr
 x86 vg_mldsa44_prepare_signing_key
