@@ -20,17 +20,6 @@ x86_64 vg_aes_gcm_seal_gather_prepared_vaes_vpclmul_avx512
 x86_64 vg_aes_gcm_seal_prepared_aesni
 x86_64 vg_aes_gcm_seal_prepared_aesni_pclmul_avx
 x86_64 vg_aes_gcm_seal_prepared_vaes_vpclmul_avx512
-arm vg_blowfish_cbc_decrypt_chained
-arm vg_blowfish_cbc_encrypt_chained
-arm vg_blowfish_cfb64_decrypt
-arm vg_blowfish_cfb64_decrypt_final
-arm vg_blowfish_cfb64_encrypt
-arm vg_blowfish_cfb64_encrypt_final
-arm vg_blowfish_ecb_decrypt
-arm vg_blowfish_ecb_encrypt
-arm vg_blowfish_expand_key
-arm vg_blowfish_ofb
-arm vg_blowfish_ofb_final
 arm vg_cmac_aes_absorb
 arm vg_cmac_aes_finish
 arm vg_cmac_aes_init
