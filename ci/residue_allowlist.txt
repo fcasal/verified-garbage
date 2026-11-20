@@ -59,12 +59,6 @@ aarch64 vg_sm4_gcm_stream_verify_ctr32_sm4_ghash_aes
 aarch64 vg_sm4_gcm_stream_verify_ghash_aes
 aarch64 vg_sm4_gcm_stream_verify_ghash_neon
 arm vg_argon2
-arm vg_blake2b_finalize
-arm vg_blake2b_init
-arm vg_blake2b_update
-arm vg_blake2s_finalize
-arm vg_blake2s_init
-arm vg_blake2s_update
 arm vg_blowfish_cbc_decrypt_chained
 arm vg_blowfish_cbc_encrypt_chained
 arm vg_blowfish_cfb64_decrypt
