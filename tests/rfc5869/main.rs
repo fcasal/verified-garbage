@@ -6,7 +6,11 @@
 //! for where it comes from) and read at run time (`tests/vectors.rs`), so these
 //! tests always run.
 
-#![cfg(any(target_arch = "riscv64", target_arch = "x86_64"))]
+#![cfg(any(
+    target_arch = "aarch64",
+    target_arch = "riscv64",
+    target_arch = "x86_64"
+))]
 
 use verified_garbage::hashes::sha1::Sha1;
 use verified_garbage::hashes::sha256::Sha256;
@@ -57,9 +61,10 @@ fn cases() -> Vec<Case> {
                 case.0
                     .push((name.trim().to_string(), value.trim().to_string()));
             }
-        } else if indent > 3
-            && let Some((_, v)) = case.0.last_mut()
-        {
+        } else {
+            // Any other line (the vectors indent them further) continues the
+            // last field's value.
+            let (_, v) = case.0.last_mut().expect("a continuation follows a field");
             v.push(' ');
             v.push_str(l.trim());
         }
