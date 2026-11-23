@@ -110,7 +110,7 @@ runs:
       if: ${{ github.event_name == 'pull_request' }}
       shell: bash
       working-directory: lean
-      run: lake env python3 ../ci/check_lean_vacuity.py HEAD^1
+      run: lake env bash ../ci/vacuity/check.sh
     # Lake writes a module's `ir/*.setup.json` (its options, and the paths
     # of its imports' outputs, for `lean --setup`) before compiling it, and
     # never reads it again: an up-to-date module needs none, and a rebuilt

@@ -1,8 +1,6 @@
 module
 
-public meta import Lean.Elab.Command
-public meta import Lean.Elab.Tactic.Omega
-public meta import Lean.Meta.Check
+meta import Lean
 
 meta section
 
@@ -28,32 +26,34 @@ private def inconsistent (type : Expr) : MetaM Bool :=
     checkWithKernel (← mkLambdaFVars xs (mkExpectedPropHint witness (mkConst ``False)))
     return true
 
-private structure Finding where
-  name : String
-  line : Nat
-  deriving ToJson
-
-private structure AuditResult where
-  scanned : Nat := 0
-  findings : Array Finding := #[]
-  incomplete : Array String := #[]
-  deriving ToJson
-
-elab "#auditVacuity" : command => do
+-- CI supplies the target as the final `import all` in the Lean module setup.
+-- Each invocation loads exactly one target, including its private theorems.
+run_cmd
   let env ← getEnv
-  let mut result : AuditResult := {}
-  for (name, info) in env.constants.map₂.toList do
-    let userName := privateToUserName name
-    unless info.isTheorem && !userName.isInternal do continue
-    let some ranges ← findDeclarationRanges? name | continue
-    result := { result with scanned := result.scanned + 1 }
-    try
-      let found ← liftTermElabM <| withCurrHeartbeats <| inconsistent info.type
-      if found then
-        let finding := { name := userName.toString, line := ranges.selectionRange.pos.line : Finding }
-        result := { result with findings := result.findings.push finding }
-    catch e =>
-      result := { result with incomplete := result.incomplete.push s!"{userName}: {← e.toMessageData.toString}" }
-  logInfo <| .tagged `VacuityAudit.result m!"{(toJson result).compress}"
+  let some target := env.header.imports.back? | throwError "missing audit target"
+  unless target.importAll do throwError "audit target must include private declarations"
+  let some idx := env.getModuleIdx? target.module | throwError "unknown audit target {target.module}"
+  let mut scanned : Nat := 0
+  let fixture := target.module == `VacuityFixture
+  let path := "lean/" ++ target.module.toString.replace "." "/" ++ ".lean"
+  let report ← IO.getEnv "VG_VACUITY_FINDINGS"
+  let mut fixtureFindings : Array Name := #[]
+  for n in env.header.moduleData[idx.toNat]!.constNames do
+    let name := privateToUserName n
+    let ci ← getConstInfo n
+    unless ci.isTheorem && !name.isInternal do continue
+    let some loc ← findDeclarationRanges? n | continue
+    scanned := scanned + 1
+    unless ← liftTermElabM <| withCurrHeartbeats <| inconsistent ci.type do continue
+    if fixture then
+      fixtureFindings := fixtureFindings.push name
+    else
+      -- Record each finding before starting the next, potentially slow theorem.
+      let location := (toJson s!"{path}:{loc.selectionRange.pos.line} {name}").compress
+      logInfo m!"Conflicting assumptions in {location}"
+      if let some file := report then
+        IO.FS.withFile file .append fun f => f.putStrLn ("    " ++ location)
+  if fixture && (scanned != 2 || fixtureFindings != #[`VacuityFixture.impossible]) then
+    throwError "expected only the impossible theorem, got {repr fixtureFindings} from {scanned} theorems"
 
 end VacuityAudit
