@@ -1,5 +1,7 @@
 module
 
+import VerifiedGarbage.Proof.MlDsa.Pack.Bits
+import VerifiedGarbage.TCB.Axioms
 public import VerifiedGarbage.Proof.MlDsa.Sign.Bounds
 public meta import VerifiedGarbage.Proof.MlDsa.Sign.Bounds
 public import Lean.Data.Json
@@ -39,6 +41,11 @@ the implementation on every vector.)
 namespace VG.Test.MlDsa
 
 open Lean Elab Command Spec.MlDsa
+
+/-- The signed packing proof must establish the full round trip stated in the spec. -/
+theorem signedPackingRoundTrip : BitPackRoundTrip := VG.Proof.MlDsa.Pack.bitUnpack_bitPack
+
+#assert_standard_axioms signedPackingRoundTrip
 
 /-- A successful iteration returns the commitment it computed. -/
 theorem iteration_commit (p : Params) (b : Bounds) (a : List (List Poly))
