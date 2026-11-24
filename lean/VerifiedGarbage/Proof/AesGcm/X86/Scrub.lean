@@ -63,6 +63,8 @@ open VG VG.X86 VG.X86.Scrub VG.Impl.AesGcm.X86 VG.Proof.AesGcm.X86
 open VG.Proof.AesGcm (agree_of bytesAt_congr streamRepr_congr)
 open VG.Impl.StackScratch.X86 (withStackScratch)
 
+variable {N : Nat}
+
 /-! ## Reading memory only within the buffers -/
 
 /-- The `n` bytes at `p`, of a buffer of at least `n` bytes there on which
@@ -201,9 +203,13 @@ materialize_code streamFinishStub := withStackScratch 2600 8 (streamFinish stub)
 materialize_code streamVerifyStub := withStackScratch 2604 9 (streamVerify stub)
 materialize_code sealStub := withStackScratch 2604 9 («seal» stub)
 materialize_code openStub := withStackScratch 2608 10 («open» stub)
+materialize_code sealStubS := withStackScratch 812 9 («seal» stub)
+materialize_code openStubS := withStackScratch 816 10 («open» stub)
 materialize_code openToStub := withStackScratch 2616 12 (Open.openTo stub stubFn)
 materialize_code sealGatherStub :=
-  VG.Impl.AesGcm.X86.DirectGather.sealGather stub
+  VG.Impl.AesGcm.X86.DirectGather.sealGather stub 2560
+materialize_code sealGatherStubS :=
+  VG.Impl.AesGcm.X86.DirectGather.sealGather stub 768
 
 theorem init_side : scrubFSide (withStackScratch 2580 3 (init stub)) [] 2612 = true := by lit_decide
 theorem streamInit_side : scrubFSide (withStackScratch 2584 4 (streamInit stub)) [] 2608 = true := by
@@ -220,10 +226,16 @@ theorem streamVerify_side : scrubFSide (withStackScratch 2604 9 (streamVerify st
   lit_decide
 theorem seal_side : scrubFSide (withStackScratch 2604 9 («seal» stub)) [] 2636 = true := by lit_decide
 theorem open_side : scrubFSide (withStackScratch 2608 10 («open» stub)) [] 2640 = true := by lit_decide
+theorem sealS_side : scrubFSide (withStackScratch 812 9 («seal» stub)) [] 844 = true := by lit_decide
+theorem openS_side : scrubFSide (withStackScratch 816 10 («open» stub)) [] 848 = true := by lit_decide
 theorem openTo_side : scrubFSide (withStackScratch 2616 12 (Open.openTo stub stubFn)) [] 2696 = true := by
   lit_decide
 theorem sealGather_side :
-    scrubFSide (VG.Impl.AesGcm.X86.DirectGather.sealGather stub) [] 2688 = true := by
+    scrubFSide (VG.Impl.AesGcm.X86.DirectGather.sealGather stub 2560) [] 2688 = true := by
+  lit_decide
+
+theorem sealGatherS_side :
+    scrubFSide (VG.Impl.AesGcm.X86.DirectGather.sealGather stub 768) [] 896 = true := by
   lit_decide
 
 variable (v : GcmImpl)
@@ -279,15 +291,28 @@ theorem open_scrub : scrubFSide (withStackScratch 2608 10 («open» v.callees)) 
   obtain ⟨hc, hk, hg⟩ := holes v
   exact scrubFSide_of_fill (n := 0) (by fill_calls) open_side
 
+theorem sealS_scrub : scrubFSide (withStackScratch 812 9 («seal» v.callees)) [] 844 = true := by
+  obtain ⟨hc, hk, hg⟩ := holes v
+  exact scrubFSide_of_fill (n := 0) (by fill_calls) sealS_side
+
+theorem openS_scrub : scrubFSide (withStackScratch 816 10 («open» v.callees)) [] 848 = true := by
+  obtain ⟨hc, hk, hg⟩ := holes v
+  exact scrubFSide_of_fill (n := 0) (by fill_calls) openS_side
+
 theorem openTo_scrub :
     scrubFSide (withStackScratch 2616 12 (Open.openTo v.callees (OpenTo.toFn v))) [] 2696 = true := by
   obtain ⟨hc, hk, hg⟩ := holes v
   exact scrubFSide_of_fill (n := 0) (by fill_calls) openTo_side
 
 theorem sealGather_scrub :
-    scrubFSide (VG.Impl.AesGcm.X86.DirectGather.sealGather v.callees) [] 2688 = true := by
+    scrubFSide (VG.Impl.AesGcm.X86.DirectGather.sealGather v.callees 2560) [] 2688 = true := by
   obtain ⟨hc, hk, hg⟩ := holes v
   exact scrubFSide_of_fill (n := 0) (by fill_calls) sealGather_side
+
+theorem sealGatherS_scrub :
+    scrubFSide (VG.Impl.AesGcm.X86.DirectGather.sealGather v.callees 768) [] 896 = true := by
+  obtain ⟨hc, hk, hg⟩ := holes v
+  exact scrubFSide_of_fill (n := 0) (by fill_calls) sealGatherS_side
 
 /-! ## The functions as emitted -/
 
@@ -354,7 +379,7 @@ theorem streamVerify_scrubbed :
     (streamVerifyOut _) (hs := streamVerify_scrub v)
 
 theorem seal_scrubbed :
-    VerifiedScrubbed target (Impl.AesGcm.X86.Fn.«seal» v.callees) (Spec.Gcm.sealContract X86.abi 2636) 0 :=
+    VerifiedScrubbed target (Impl.AesGcm.X86.Fn.«seal» v.callees 320) (Spec.Gcm.sealContract X86.abi 2636) 0 :=
   verifiedScrubbedAll (api := Spec.Gcm.sealApi)
     { code := withStackScratch 2604 9 («seal» v.callees)
       verified := Proof.AesGcm.seal_keyed (seal_framed v)
@@ -364,12 +389,33 @@ theorem seal_scrubbed :
 /-- `vg_aes_gcm_open`. (`@openOut`: applied without `@`, the elaborator
 reduces its type to see what it is a function of.) -/
 theorem open_scrubbed :
-    VerifiedScrubbed target (Impl.AesGcm.X86.Fn.«open» v.callees) (Spec.Gcm.openContract X86.abi 2640) 32 :=
+    VerifiedScrubbed target (Impl.AesGcm.X86.Fn.«open» v.callees 320) (Spec.Gcm.openContract X86.abi 2640) 32 :=
   verifiedScrubbedAll (api := Spec.Gcm.openApi)
     { code := withStackScratch 2608 10 («open» v.callees)
       verified := Proof.AesGcm.open_keyed (open_framed v)
       spSafe := withStackScratch_spSafe (open_spSafe v) }
     (@openOut _) (hs := open_scrub v)
+
+/-- `vg_aes_gcm_seal` with 768 bytes of working space, over an implementation of CTR that uses
+256 of its own or fewer. -/
+theorem sealS_scrubbed (h : v.ctr.scr ≤ 256) :
+    VerifiedScrubbed target (Impl.AesGcm.X86.Fn.«seal» v.callees 96) (Spec.Gcm.sealContract X86.abi 844) 0 :=
+  have := WSize.small h
+  verifiedScrubbedAll (api := Spec.Gcm.sealApi)
+    { code := withStackScratch 812 9 («seal» v.callees)
+      verified := Proof.AesGcm.seal_keyed (seal_framedS v)
+      spSafe := withStackScratch_spSafe (seal_spSafe v) }
+    (sealOut _) (hs := sealS_scrub v)
+
+/-- `vg_aes_gcm_open` with 768 bytes of working space, as `sealS_scrubbed`. -/
+theorem openS_scrubbed (h : v.ctr.scr ≤ 256) :
+    VerifiedScrubbed target (Impl.AesGcm.X86.Fn.«open» v.callees 96) (Spec.Gcm.openContract X86.abi 848) 32 :=
+  have := WSize.small h
+  verifiedScrubbedAll (api := Spec.Gcm.openApi)
+    { code := withStackScratch 816 10 («open» v.callees)
+      verified := Proof.AesGcm.open_keyed (open_framedS v)
+      spSafe := withStackScratch_spSafe (open_spSafe v) }
+    (@openOut _) (hs := openS_scrub v)
 
 theorem openTo_scrubbed :
     VerifiedScrubbed target (Impl.AesGcm.X86.Fn.openTo v.callees (OpenTo.toFn v))
@@ -381,13 +427,24 @@ theorem openTo_scrubbed :
     (@openToOut _) (hs := openTo_scrub v)
 
 theorem sealGather_scrubbed :
-    VerifiedScrubbed target (Impl.AesGcm.X86.Fn.sealGather v.callees)
+    VerifiedScrubbed target (Impl.AesGcm.X86.Fn.sealGather v.callees 320)
       (Spec.Gcm.sealGatherContract X86.abi 2688) 0 :=
   verifiedScrubbedAll (api := Spec.Gcm.sealGatherApi)
-    { code := VG.Impl.AesGcm.X86.DirectGather.sealGather v.callees
-      verified := Proof.AesGcm.sealGather_keyed (DirectGather.sealGather_verified v)
-      spSafe := DirectGather.core_safe v }
+    { code := VG.Impl.AesGcm.X86.DirectGather.sealGather v.callees 2560
+      verified := Proof.AesGcm.sealGather_keyed (DirectGather.sealGather_verified (N := 2560) v (.inr rfl))
+      spSafe := DirectGather.core_safe v (.inr rfl) }
     (sealGatherOut _) (hs := sealGather_scrub v)
+
+/-- `vg_aes_gcm_seal_gather` with 768 bytes of working space, as `sealS_scrubbed`. -/
+theorem sealGatherS_scrubbed (h : v.ctr.scr ≤ 256) :
+    VerifiedScrubbed target (Impl.AesGcm.X86.Fn.sealGather v.callees 96)
+      (Spec.Gcm.sealGatherContract X86.abi 896) 0 :=
+  have := WSize.small h
+  verifiedScrubbedAll (api := Spec.Gcm.sealGatherApi)
+    { code := VG.Impl.AesGcm.X86.DirectGather.sealGather v.callees 768
+      verified := Proof.AesGcm.sealGather_keyed (DirectGather.sealGather_verified (N := 768) v (.inl rfl))
+      spSafe := DirectGather.core_safe v (.inl rfl) }
+    (sealGatherOut _) (hs := sealGatherS_scrub v)
 
 /-! ## `spSafe` of the functions as emitted, which their registrations state -/
 
@@ -410,15 +467,22 @@ theorem streamFinish_spSafeF :
 theorem streamVerify_spSafeF :
     (Impl.AesGcm.X86.Fn.streamVerify v.callees).all (fun i => !isa.writesSp i) = true :=
   scrubAll_spSafe (withStackScratch_spSafe (streamVerify_spSafe v))
-theorem seal_spSafeF : (Impl.AesGcm.X86.Fn.«seal» v.callees).all (fun i => !isa.writesSp i) = true :=
+theorem seal_spSafeF : (Impl.AesGcm.X86.Fn.«seal» v.callees 320).all (fun i => !isa.writesSp i) = true :=
   scrubAll_spSafe (withStackScratch_spSafe (seal_spSafe v))
-theorem open_spSafeF : (Impl.AesGcm.X86.Fn.«open» v.callees).all (fun i => !isa.writesSp i) = true :=
+theorem open_spSafeF : (Impl.AesGcm.X86.Fn.«open» v.callees 320).all (fun i => !isa.writesSp i) = true :=
+  scrubAll_spSafe (withStackScratch_spSafe (open_spSafe v))
+theorem sealS_spSafeF : (Impl.AesGcm.X86.Fn.«seal» v.callees 96).all (fun i => !isa.writesSp i) = true :=
+  scrubAll_spSafe (withStackScratch_spSafe (seal_spSafe v))
+theorem openS_spSafeF : (Impl.AesGcm.X86.Fn.«open» v.callees 96).all (fun i => !isa.writesSp i) = true :=
   scrubAll_spSafe (withStackScratch_spSafe (open_spSafe v))
 theorem openTo_spSafeF :
     (Impl.AesGcm.X86.Fn.openTo v.callees (OpenTo.toFn v)).all (fun i => !isa.writesSp i) = true :=
   scrubAll_spSafe (OpenTo.openTo_spSafe v)
 theorem sealGather_spSafeF :
-    (Impl.AesGcm.X86.Fn.sealGather v.callees).all (fun i => !isa.writesSp i) = true :=
-  scrubAll_spSafe (DirectGather.core_safe v)
+    (Impl.AesGcm.X86.Fn.sealGather v.callees 320).all (fun i => !isa.writesSp i) = true :=
+  scrubAll_spSafe (DirectGather.core_safe v (.inr rfl))
+theorem sealGatherS_spSafeF :
+    (Impl.AesGcm.X86.Fn.sealGather v.callees 96).all (fun i => !isa.writesSp i) = true :=
+  scrubAll_spSafe (DirectGather.core_safe v (.inl rfl))
 
 end VG.Proof.AesGcm.X86.Scrub

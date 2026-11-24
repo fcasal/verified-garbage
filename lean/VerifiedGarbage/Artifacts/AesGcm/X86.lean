@@ -77,24 +77,42 @@ def artifactsOf (v : GcmImpl) : List Artifact := [
     code := Impl.AesGcm.X86.Fn.streamVerify v.callees
     verified := Proof.AesGcm.X86.Scrub.streamVerify_scrubbed v
     spSafe := Proof.AesGcm.X86.Scrub.streamVerify_spSafeF v },
-  Spec.Gcm.sealApi.artifact X86.target {
-    suffix := v.suffix
-    code := Impl.AesGcm.X86.Fn.«seal» v.callees
-    verified := Proof.AesGcm.X86.Scrub.seal_scrubbed v
-    spSafe := Proof.AesGcm.X86.Scrub.seal_spSafeF v },
-  Spec.Gcm.openApi.artifact X86.target {
-    suffix := v.suffix
-    code := Impl.AesGcm.X86.Fn.«open» v.callees
-    verified := Proof.AesGcm.X86.Scrub.open_scrubbed v
-    spSafe := Proof.AesGcm.X86.Scrub.open_spSafeF v }]
+  Spec.Gcm.sealApi.artifact X86.target
+    (if h : v.ctr.scr ≤ 256 then
+      { suffix := v.suffix
+        code := Impl.AesGcm.X86.Fn.«seal» v.callees 96
+        verified := Proof.AesGcm.X86.Scrub.sealS_scrubbed v h
+        spSafe := Proof.AesGcm.X86.Scrub.sealS_spSafeF v }
+    else
+      { suffix := v.suffix
+        code := Impl.AesGcm.X86.Fn.«seal» v.callees 320
+        verified := Proof.AesGcm.X86.Scrub.seal_scrubbed v
+        spSafe := Proof.AesGcm.X86.Scrub.seal_spSafeF v }),
+  Spec.Gcm.openApi.artifact X86.target
+    (if h : v.ctr.scr ≤ 256 then
+      { suffix := v.suffix
+        code := Impl.AesGcm.X86.Fn.«open» v.callees 96
+        verified := Proof.AesGcm.X86.Scrub.openS_scrubbed v h
+        spSafe := Proof.AesGcm.X86.Scrub.openS_spSafeF v }
+    else
+      { suffix := v.suffix
+        code := Impl.AesGcm.X86.Fn.«open» v.callees 320
+        verified := Proof.AesGcm.X86.Scrub.open_scrubbed v
+        spSafe := Proof.AesGcm.X86.Scrub.open_spSafeF v })]
 
 /-- Gather seal reads plaintext descriptors directly into the ciphertext destination. -/
 def artifactsGather (v : GcmImpl) : List Artifact := [
-  Spec.Gcm.sealGatherApi.artifact X86.target {
-    suffix := v.suffix
-    code := Impl.AesGcm.X86.Fn.sealGather v.callees
-    verified := Proof.AesGcm.X86.Scrub.sealGather_scrubbed v
-    spSafe := Proof.AesGcm.X86.Scrub.sealGather_spSafeF v }]
+  Spec.Gcm.sealGatherApi.artifact X86.target
+    (if h : v.ctr.scr ≤ 256 then
+      { suffix := v.suffix
+        code := Impl.AesGcm.X86.Fn.sealGather v.callees 96
+        verified := Proof.AesGcm.X86.Scrub.sealGatherS_scrubbed v h
+        spSafe := Proof.AesGcm.X86.Scrub.sealGatherS_spSafeF v }
+    else
+      { suffix := v.suffix
+        code := Impl.AesGcm.X86.Fn.sealGather v.callees 320
+        verified := Proof.AesGcm.X86.Scrub.sealGather_scrubbed v
+        spSafe := Proof.AesGcm.X86.Scrub.sealGather_spSafeF v })]
 
 /-- `vg_aes_gcm_open_to`, calling `vg_aes_ctr32_to` of the implementations `v`. -/
 def artifactsOpenTo (v : GcmImpl) : List Artifact := [
