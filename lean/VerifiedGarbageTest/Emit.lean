@@ -50,6 +50,13 @@ open VG.Emit
   end\n"
 #guard ((driver []).splitOn "def all : List (String × List Artifact) := []\n").length == 2
 
+-- The full and single-algorithm emitters use the same checked registration term.
+#guard (driver ["VerifiedGarbage.Artifacts.Zeroize.X86_64"]).contains
+  "checkedApiList VG.Spec.Zeroize.zeroizeApi VG.Spec.Zeroize.exportGuarantee.Holds VG.Proof.Zeroize.exportGuarantee VG.Artifacts.Zeroize.X86_64.artifacts rfl"
+#guard zeroizeExport "other" "other" "vg_zeroize_avx"
+#guard zeroizeExport "other" "vg_zeroize" "another_symbol"
+#guard !zeroizeExport "other" "vg_other" "vg_other_avx"
+
 -- The target directory of a registration module.
 #guard targetDirOf "VerifiedGarbage.Artifacts.Sha3.X86_64" == some "X86_64"
 #guard targetDirOf "VerifiedGarbage.Artifacts.Sha3" == none

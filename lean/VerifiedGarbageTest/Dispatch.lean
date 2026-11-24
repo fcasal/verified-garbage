@@ -146,6 +146,14 @@ def dispatchOf (as : List Artifact) : String :=
 
 -- Every implementation of a function is in one registration file.
 #guard (Emit.checkSources [("A", Artifacts.Poly1305.AArch64.artifacts)]).toOption.isSome
+-- A protected final symbol cannot migrate to an uncertified list, even when
+-- its module and base are unrelated. Use an existing registration as a fixture.
+private def renamed : List Artifact := neon.map fun a => { a with name := "vg_zeroize_variant" }
+
+#guard !(Emit.checkSources [("VerifiedGarbage.Artifacts.Other.AArch64", renamed)]).isOk
+#guard (Emit.checkSources [("VerifiedGarbage.Artifacts.Zeroize.AArch64",
+  renamed.map fun a => { a with base := "vg_zeroize" })]).isOk
+
 #guard match Emit.checkSources [("A", others), ("B", neon)] with
   | .error e => has e "aarch64: the implementations of vg_poly1305_update are in two registration \
       files, A and B"
